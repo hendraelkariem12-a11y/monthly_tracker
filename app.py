@@ -14,7 +14,7 @@ st.set_page_config(
 )
 
 # ---------------------------------------------------------
-# ASSETS MLBB IMAGE LINKS (CLEAN TRANSPARENT PNG)
+# ASSETS MLBB IMAGE LINKS
 # ---------------------------------------------------------
 IMG_FRAME = "https://i.ibb.co.com/Pzgqj1wD/1788849011671-removebg-preview.png"
 IMG_HERO_MAIN = "https://i.ibb.co.com/SXmxTtfn/1788848932501-removebg-preview.png"
@@ -24,7 +24,7 @@ IMG_ICON_KES = "https://i.ibb.co.com/zhm13rJD/1788849195681-removebg-preview.png
 IMG_ICON_KEU = "https://i.ibb.co.com/2YpL6vjZ/1788849240997-removebg-preview.png"
 
 # ---------------------------------------------------------
-# CUSTOM CSS (FRAME PRESISI & FOTO DIPERBESAR)
+# CUSTOM CSS
 # ---------------------------------------------------------
 custom_css = f"""
 <style>
@@ -67,7 +67,6 @@ html, body, [class*="css"] {{
     margin-bottom: 12px;
 }}
 
-/* BOX CONTAINER BINGKAI MLBB & FOTO BESAR PRESISI */
 .avatar-box {{
     position: relative;
     width: 180px;
@@ -84,7 +83,6 @@ html, body, [class*="css"] {{
     top: 25px;
     left: 25px;
     z-index: 1;
-    box-shadow: inset 0 0 10px rgba(0,0,0,0.5);
 }}
 
 .frame-overlay {{
@@ -133,7 +131,7 @@ html, body, [class*="css"] {{
     padding: 18px;
     border: 1px solid rgba(234, 179, 8, 0.2);
     margin-bottom: 12px;
-    min-height: 160px;
+    min-height: 180px;
 }}
 
 .category-icon-title {{
@@ -147,6 +145,14 @@ html, body, [class*="css"] {{
     width: 32px;
     height: 32px;
     object-fit: contain;
+}}
+
+.note-text {{
+    color: #94a3b8;
+    font-size: 0.85rem;
+    font-style: italic;
+    margin-left: 15px;
+    margin-bottom: 8px;
 }}
 
 #MainMenu {{visibility: hidden;}}
@@ -234,7 +240,6 @@ if menu == "📖 Timeline Progress Bulanan":
         for bulan_item in reversed(bulan_list):
             st.markdown(f'<div class="timeline-badge">📅 LAPORAN PERKEMBANGAN — BULAN {bulan_item.upper()}</div>', unsafe_allow_html=True)
             
-            # Default foto jika user belum upload
             foto_bulan = "https://i.ibb.co/MBtjqXQ/no-avatar.png"
             evaluasi_text = "Belum ada catatan evaluasi khusus untuk bulan ini."
             
@@ -251,7 +256,6 @@ if menu == "📖 Timeline Progress Bulanan":
             col_avatar, col_info, col_hero = st.columns([1.3, 2.7, 1], gap="medium")
             
             with col_avatar:
-                # Foto Diri Diperbesar Pas di Dalam Frame
                 st.markdown(f"""
                 <div class="avatar-box">
                     <img src="{foto_bulan}" class="user-photo">
@@ -271,7 +275,6 @@ if menu == "📖 Timeline Progress Bulanan":
                 """, unsafe_allow_html=True)
 
             with col_hero:
-                # Hero Masha Tanpa Background
                 st.markdown(f'<img src="{IMG_HERO_MAIN}" class="hero-img-display">', unsafe_allow_html=True)
 
             # REKAPAN OTOMATIS BULANAN
@@ -281,10 +284,9 @@ if menu == "📖 Timeline Progress Bulanan":
                 df_month = df_log[df_log["Bulan"] == bulan_item]
                 
                 if not df_month.empty:
-                    df_sum = df_month.groupby(["Kategori", "Metrik / Nama Kegiatan", "Satuan"])["Nilai"].sum().reset_index()
-                    
                     col_p, col_a, col_k = st.columns(3)
                     
+                    # 1. PENGETAHUAN
                     with col_p:
                         st.markdown(f"""
                         <div class="summary-box">
@@ -293,15 +295,23 @@ if menu == "📖 Timeline Progress Bulanan":
                                 <h4 style="color:#38bdf8; margin:0;">Pengetahuan</h4>
                             </div>
                         """, unsafe_allow_html=True)
-                        df_peng = df_sum[df_sum["Kategori"] == "Pengetahuan"]
+                        df_peng = df_month[df_month["Kategori"] == "Pengetahuan"]
                         if not df_peng.empty:
-                            for _, r in df_peng.iterrows():
-                                if r['Nilai'] > 0:
-                                    st.markdown(f"• **{r['Metrik / Nama Kegiatan']}**: {r['Nilai']} {r['Satuan']}")
+                            for metrik, grp in df_peng.groupby("Metrik / Nama Kegiatan"):
+                                tot_val = grp["Nilai"].sum()
+                                if tot_val > 0:
+                                    satuan = grp["Satuan"].iloc[0]
+                                    st.markdown(f"• **{metrik}**: `{tot_val}` {satuan}")
+                                    # Ambil catatan yang ada
+                                    notes = [str(n).strip() for n in grp["Catatan"].tolist() if str(n).strip() != ""]
+                                    if notes:
+                                        catatan_str = ", ".join(notes)
+                                        st.markdown(f'<div class="note-text">📝 <i>Catatan: {catatan_str}</i></div>', unsafe_allow_html=True)
                         else:
                             st.write("Belum ada data.")
                         st.markdown('</div>', unsafe_allow_html=True)
 
+                    # 2. AGAMA
                     with col_a:
                         st.markdown(f"""
                         <div class="summary-box">
@@ -310,15 +320,22 @@ if menu == "📖 Timeline Progress Bulanan":
                                 <h4 style="color:#4ade80; margin:0;">Agama & Amalan</h4>
                             </div>
                         """, unsafe_allow_html=True)
-                        df_agm = df_sum[df_sum["Kategori"] == "Agama"]
+                        df_agm = df_month[df_month["Kategori"] == "Agama"]
                         if not df_agm.empty:
-                            for _, r in df_agm.iterrows():
-                                if r['Nilai'] > 0:
-                                    st.markdown(f"• **{r['Metrik / Nama Kegiatan']}**: {r['Nilai']} {r['Satuan']}")
+                            for metrik, grp in df_agm.groupby("Metrik / Nama Kegiatan"):
+                                tot_val = grp["Nilai"].sum()
+                                if tot_val > 0:
+                                    satuan = grp["Satuan"].iloc[0]
+                                    st.markdown(f"• **{metrik}**: `{tot_val}` {satuan}")
+                                    notes = [str(n).strip() for n in grp["Catatan"].tolist() if str(n).strip() != ""]
+                                    if notes:
+                                        catatan_str = ", ".join(notes)
+                                        st.markdown(f'<div class="note-text">📝 <i>Catatan: {catatan_str}</i></div>', unsafe_allow_html=True)
                         else:
                             st.write("Belum ada data.")
                         st.markdown('</div>', unsafe_allow_html=True)
 
+                    # 3. KESEHATAN
                     with col_k:
                         st.markdown(f"""
                         <div class="summary-box">
@@ -327,11 +344,17 @@ if menu == "📖 Timeline Progress Bulanan":
                                 <h4 style="color:#f43f5e; margin:0;">Kesehatan</h4>
                             </div>
                         """, unsafe_allow_html=True)
-                        df_kes = df_sum[df_sum["Kategori"] == "Kesehatan"]
+                        df_kes = df_month[df_month["Kategori"] == "Kesehatan"]
                         if not df_kes.empty:
-                            for _, r in df_kes.iterrows():
-                                if r['Nilai'] > 0:
-                                    st.markdown(f"• **{r['Metrik / Nama Kegiatan']}**: {r['Nilai']} {r['Satuan']}")
+                            for metrik, grp in df_kes.groupby("Metrik / Nama Kegiatan"):
+                                tot_val = grp["Nilai"].sum()
+                                if tot_val > 0:
+                                    satuan = grp["Satuan"].iloc[0]
+                                    st.markdown(f"• **{metrik}**: `{tot_val}` {satuan}")
+                                    notes = [str(n).strip() for n in grp["Catatan"].tolist() if str(n).strip() != ""]
+                                    if notes:
+                                        catatan_str = ", ".join(notes)
+                                        st.markdown(f'<div class="note-text">📝 <i>Catatan: {catatan_str}</i></div>', unsafe_allow_html=True)
                         else:
                             st.write("Belum ada data.")
                         st.markdown('</div>', unsafe_allow_html=True)
