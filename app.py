@@ -25,7 +25,7 @@ IMG_ICON_KES = "https://i.ibb.co.com/Rpg9mpr2/1788849195681.png"
 IMG_ICON_KEU = "https://i.ibb.co.com/TqcvQFM2/1788849240997.png"
 
 # ---------------------------------------------------------
-# CUSTOM INJECTED CSS (MLBB GLASSMORPHISM UI)
+# CUSTOM INJECTED CSS (MLBB GLASSMORPHISM UI & MIX-BLEND)
 # ---------------------------------------------------------
 custom_css = f"""
 <style>
@@ -104,7 +104,7 @@ html, body, [class*="css"] {{
     margin-bottom: 12px;
 }}
 
-/* Frame Profile Container */
+/* Frame Profile Container dengan Blend Mode untuk Menghilangkan Background Putih */
 .avatar-container {{
     position: relative;
     width: 150px;
@@ -129,13 +129,16 @@ html, body, [class*="css"] {{
     top: 0;
     left: 0;
     pointer-events: none;
+    mix-blend-mode: screen; /* Menyamarkan background putih/pola catur */
+    filter: contrast(120%) brightness(110%);
 }}
 
-/* Hero Main Floating Overlay */
+/* Hero Main Floating Overlay dengan Blend Mode */
 .floating-hero {{
     width: 130px;
     animation: floatHero 3.5s ease-in-out infinite;
-    filter: drop-shadow(0 10px 15px rgba(0,0,0,0.5));
+    mix-blend-mode: screen; /* Menyamarkan background putih/pola catur */
+    filter: contrast(120%) brightness(110%);
 }}
 
 /* Metric Box Styling */
@@ -188,6 +191,7 @@ html, body, [class*="css"] {{
     width: 32px;
     height: 32px;
     object-fit: contain;
+    mix-blend-mode: screen;
 }}
 
 /* Streamlit Native UI Overrides */
@@ -355,7 +359,7 @@ if menu == "📖 Timeline Progress Bulanan":
             with col_hero:
                 st.markdown(f'<div style="text-align: center;"><img src="{IMG_HERO_MAIN}" class="floating-hero"></div>', unsafe_allow_html=True)
 
-            # REKAPAN OTOMATIS BULANAN WITH CUSTOM ICONS
+            # REKAPAN OTOMATIS BULANAN
             st.markdown('<h3 style="color: #eab308; font-size: 1.1rem; margin-top: 25px; margin-bottom: 15px;">📊 REKAPAN TOTAL PENCAPAIAN BULAN INI (OTOMATIS)</h3>', unsafe_allow_html=True)
             
             if not df_log.empty and "Bulan" in df_log.columns:
@@ -417,10 +421,10 @@ if menu == "📖 Timeline Progress Bulanan":
                             st.write("Belum ada data.")
                         st.markdown('</div>', unsafe_allow_html=True)
 
-            # POSISI KEUANGAN REAL-TIME WITH KEUANGAN ICON
+            # POSISI KEUANGAN REAL-TIME
             st.markdown(f"""
             <div style="display:flex; align-items:center; gap:10px; margin-top:25px; margin-bottom:15px;">
-                <img src="{IMG_ICON_KEU}" style="width:28px; height:28px;">
+                <img src="{IMG_ICON_KEU}" style="width:28px; height:28px; mix-blend-mode:screen;">
                 <h3 style="color: #38bdf8; font-size: 1.1rem; margin:0;">POSISI KEUANGAN REAL-TIME (CARRY OVER)</h3>
             </div>
             """, unsafe_allow_html=True)
