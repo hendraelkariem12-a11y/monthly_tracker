@@ -202,34 +202,43 @@ menu = st.sidebar.radio("", [
     "⚙️ Kelola Metrik & Kategori Baru"
 ])
 
-# HELPER HITUNG SALDO FLEXIBLE (MENYESUAIKAN PENAMAAN GOOGLE SHEETS)
-def get_calculated_finance_val(df_log, bulan_target, account_name):
+# HELPER HITUNG SALDO PER BULAN (TIDAK MERUSAK BULAN LALU)
+def get_monthly_finance_val(df_log, bulan_target, list_keywords):
     if df_log.empty or "Metrik / Nama Kegiatan" not in df_log.columns:
         return 0
     
-    # Filter kata kunci (misal: "Bank", "DANA", "Cash", "Piutang", "Utang")
-    df_met = df_log[df_log["Metrik / Nama Kegiatan"].astype(str).str.contains(account_name, case=False, na=False)]
-    if df_met.empty:
+    # Bikin filter regex untuk kata kunci (misal: "DANA", "E-Wallet", "Wallet")
+    pattern = "|".join(list_keywords)
+    
+    df_keuangan = df_log[df_log["Kategori"] == "Keuangan"]
+    if df_keuangan.empty:
         return 0
-        
-    # Ambil data pengeluaran spesifik jika ada
-    df_pengeluaran = df_met[df_met["Metrik / Nama Kegiatan"].astype(str).str.contains("Pengeluaran", case=False, na=False)]
+
+    # Filter metrik sesuai akun
+    df_acc = df_keuangan[df_keuangan["Metrik / Nama Kegiatan"].astype(str).str.contains(pattern, case=False, na=False)]
+    if df_acc.empty:
+        return 0
+
+    # Filter khusus bulan target saja
+    df_bulan = df_acc[df_acc["Bulan"] == bulan_target]
+    
+    # 1. Jika ada inputan saldo di bulan target ini
+    df_saldo = df_bulan[~df_bulan["Metrik / Nama Kegiatan"].astype(str).str.contains("Pengeluaran", case=False, na=False)]
+    val_saldo = 0
+    if not df_saldo.empty and (df_saldo["Nilai"] > 0).any():
+        val_saldo = df_saldo[df_saldo["Nilai"] > 0]["Nilai"].iloc[-1]
+    else:
+        # Jika belum ada saldo baru di bulan ini, tarik dari bulan sebelumnya
+        df_prev_saldo = df_acc[~df_acc["Metrik / Nama Kegiatan"].astype(str).str.contains("Pengeluaran", case=False, na=False)]
+        if not df_prev_saldo.empty and (df_prev_saldo["Nilai"] > 0).any():
+            val_saldo = df_prev_saldo[df_prev_saldo["Nilai"] > 0]["Nilai"].iloc[-1]
+
+    # 2. Kurangi total pengeluaran khusus di bulan target ini
+    df_pengeluaran = df_bulan[df_bulan["Metrik / Nama Kegiatan"].astype(str).str.contains("Pengeluaran", case=False, na=False)]
     val_pengeluaran = 0
     if not df_pengeluaran.empty:
-        val_pengeluaran = df_pengeluaran[df_pengeluaran["Bulan"] == bulan_target]["Nilai"].sum()
+        val_pengeluaran = df_pengeluaran["Nilai"].sum()
 
-    # Ambil data saldo pokok
-    df_saldo = df_met[~df_met["Metrik / Nama Kegiatan"].astype(str).str.contains("Pengeluaran", case=False, na=False)]
-    val_saldo = 0
-    if not df_saldo.empty:
-        df_curr = df_saldo[df_saldo["Bulan"] == bulan_target]
-        if not df_curr.empty and (df_curr["Nilai"] > 0).any():
-            val_saldo = df_curr[df_curr["Nilai"] > 0]["Nilai"].iloc[-1]
-        else:
-            df_nonzero = df_saldo[df_saldo["Nilai"] > 0]
-            if not df_nonzero.empty:
-                val_saldo = df_nonzero["Nilai"].iloc[-1]
-                
     return max(0, val_saldo - val_pengeluaran)
 
 # ---------------------------------------------------------
@@ -305,7 +314,6 @@ if menu == "📖 Timeline Progress Bulanan":
                 if not df_month.empty:
                     col_p, col_a, col_k = st.columns(3)
                     
-                    # 1. PENGETAHUAN
                     with col_p:
                         html_peng = f"""
                         <div class="summary-box">
@@ -331,7 +339,6 @@ if menu == "📖 Timeline Progress Bulanan":
                         html_peng += "</div>"
                         st.markdown(html_peng, unsafe_allow_html=True)
 
-                    # 2. AGAMA
                     with col_a:
                         html_agm = f"""
                         <div class="summary-box">
@@ -357,7 +364,6 @@ if menu == "📖 Timeline Progress Bulanan":
                         html_agm += "</div>"
                         st.markdown(html_agm, unsafe_allow_html=True)
 
-                    # 3. KESEHATAN
                     with col_k:
                         html_kes = f"""
                         <div class="summary-box">
@@ -383,19 +389,19 @@ if menu == "📖 Timeline Progress Bulanan":
                         html_kes += "</div>"
                         st.markdown(html_kes, unsafe_allow_html=True)
 
-            # POSISI KEUANGAN OTO-DEDUCT
+            # POSISI KEUANGAN KHUSUS BULAN INI
             st.markdown(f"""
             <div style="display:flex; align-items:center; gap:10px; margin-top:25px; margin-bottom:15px;">
                 <img src="{IMG_ICON_KEU}" style="width:28px; height:28px;">
-                <h3 style="color: #38bdf8; font-size: 1.1rem; margin:0;">POSISI KEUANGAN REAL-TIME (SESETELAH POTONGAN PENGELUARAN)</h3>
+                <h3 style="color: #38bdf8; font-size: 1.1rem; margin:0;">POSISI KEUANGAN REKAP BULAN {bulan_item.upper()}</h3>
             </div>
             """, unsafe_allow_html=True)
             
-            s_bank = get_calculated_finance_val(df_log, bulan_item, "Bank")
-            s_dana = get_calculated_finance_val(df_log, bulan_item, "DANA")
-            s_cash = get_calculated_finance_val(df_log, bulan_item, "Cash")
-            s_piutang = get_calculated_finance_val(df_log, bulan_item, "Piutang")
-            s_utang = get_calculated_finance_val(df_log, bulan_item, "Utang")
+            s_bank = get_monthly_finance_val(df_log, bulan_item, ["Bank"])
+            s_dana = get_monthly_finance_val(df_log, bulan_item, ["DANA", "E-Wallet", "Ewallet", "Wallet"])
+            s_cash = get_monthly_finance_val(df_log, bulan_item, ["Cash", "Tunai"])
+            s_piutang = get_monthly_finance_val(df_log, bulan_item, ["Piutang"])
+            s_utang = get_monthly_finance_val(df_log, bulan_item, ["Utang"])
 
             total_aset = s_bank + s_dana + s_cash + s_piutang
             net_worth = total_aset - s_utang
@@ -405,7 +411,7 @@ if menu == "📖 Timeline Progress Bulanan":
             with m_col1:
                 st.markdown(f'<div class="metric-box"><div class="metric-label">💳 BANK</div><div class="metric-value">Rp {s_bank:,.0f}</div></div>', unsafe_allow_html=True)
             with m_col2:
-                st.markdown(f'<div class="metric-box"><div class="metric-label">📱 DANA</div><div class="metric-value">Rp {s_dana:,.0f}</div></div>', unsafe_allow_html=True)
+                st.markdown(f'<div class="metric-box"><div class="metric-label">📱 DANA / E-WALLET</div><div class="metric-value">Rp {s_dana:,.0f}</div></div>', unsafe_allow_html=True)
             with m_col3:
                 st.markdown(f'<div class="metric-box"><div class="metric-label">💵 CASH</div><div class="metric-value">Rp {s_cash:,.0f}</div></div>', unsafe_allow_html=True)
             with m_col4:
@@ -443,7 +449,7 @@ elif menu == "📝 Input Progress Mingguan":
             {"Kategori": "Kesehatan", "Nama Metrik": "Push Up", "Satuan": "Reps"},
             {"Kategori": "Kesehatan", "Nama Metrik": "Squat Jump", "Satuan": "Reps"},
             {"Kategori": "Keuangan", "Nama Metrik": "Saldo Bank", "Satuan": "Rp"},
-            {"Kategori": "Keuangan", "Nama Metrik": "Saldo DANA", "Satuan": "Rp"},
+            {"Kategori": "Keuangan", "Nama Metrik": "Saldo E-Wallet", "Satuan": "Rp"},
             {"Kategori": "Keuangan", "Nama Metrik": "Saldo Cash", "Satuan": "Rp"},
             {"Kategori": "Keuangan", "Nama Metrik": "Piutang (Diutangin)", "Satuan": "Rp"},
             {"Kategori": "Keuangan", "Nama Metrik": "Utang Saya", "Satuan": "Rp"}
@@ -455,7 +461,7 @@ elif menu == "📝 Input Progress Mingguan":
         col1, col2 = st.columns(2)
         with col1:
             bulan = st.selectbox("Pilih Bulan", ["Januari", "Februari", "Maret", "April", "Mei", "Juni", 
-                                                "Juli", "Agustus", "September", "Oktober", "November", "Desember"], index=7)
+                                                "Juli", "Agustus", "September", "Oktober", "November", "Desember"], index=8)
         with col2:
             minggu = st.selectbox("Pilih Minggu", ["Minggu 1", "Minggu 2", "Minggu 3", "Minggu 4"])
         
@@ -495,17 +501,17 @@ elif menu == "📝 Input Progress Mingguan":
 # ---------------------------------------------------------
 elif menu == "💸 Transaksi & Catat Pengeluaran":
     st.markdown('<h2 class="gradient-header">💸 CATAT TRANSAKSI PENGELUARAN</h2>', unsafe_allow_html=True)
-    st.write("Catat pengeluaran harian kamu dan pilih sumber dana (Bank, DANA, atau Cash) yang ingin dipotong saldonya secara otomatis.")
+    st.write("Catat pengeluaran harian kamu dan pilih sumber dana yang ingin dipotong saldonya secara otomatis.")
 
     with st.form("form_transaksi"):
         c1, c2 = st.columns(2)
         with c1:
             bulan_t = st.selectbox("Pilih Bulan Transaksi", ["Januari", "Februari", "Maret", "April", "Mei", "Juni", 
-                                                           "Juli", "Agustus", "September", "Oktober", "November", "Desember"], index=7)
+                                                           "Juli", "Agustus", "September", "Oktober", "November", "Desember"], index=8)
         with c2:
             minggu_t = st.selectbox("Pilih Minggu Transaksi", ["Minggu 1", "Minggu 2", "Minggu 3", "Minggu 4"])
 
-        sumber_dana = st.selectbox("💰 Pilih Sumber Dana / Dompet:", ["Bank", "DANA", "Cash"])
+        sumber_dana = st.selectbox("💰 Pilih Sumber Dana / Dompet:", ["Bank", "E-Wallet", "Cash"])
         nominal = st.number_input("Nominal Pengeluaran (Rp):", min_value=0, step=10000, value=50000)
         keperluan = st.text_input("Catatan / Keterangan Keperluan:", placeholder="Misal: Beli buku, bayar internet, makan...")
 
@@ -517,7 +523,7 @@ elif menu == "💸 Transaksi & Catat Pengeluaran":
                 metrik_name = f"Pengeluaran dari {sumber_dana}"
                 row_transaksi = [bulan_t, minggu_t, "Keuangan", metrik_name, nominal, "Rp", keperluan]
                 ws_log.append_row(row_transaksi)
-                st.success(f"✅ Pengeluaran sebesar Rp {nominal:,.0f} berhasil dicatat dan dipotong otomatis dari saldo **{sumber_dana}**!")
+                st.success(f"✅ Pengeluaran sebesar Rp {nominal:,.0f} berhasil dicatat dan dipotong otomatis dari saldo **{sumber_dana}** bulan {bulan_t}!")
         else:
             st.warning("Masukkan nominal pengeluaran yang valid.")
 
@@ -529,7 +535,7 @@ elif menu == "🎯 Upload Foto & Evaluasi Bulanan":
 
     with st.form("form_bulanan"):
         bulan_eval = st.selectbox("Pilih Bulan", ["Januari", "Februari", "Maret", "April", "Mei", "Juni", 
-                                                  "Juli", "Agustus", "September", "Oktober", "November", "Desember"], index=7)
+                                                  "Juli", "Agustus", "September", "Oktober", "November", "Desember"], index=8)
         
         foto_url_input = st.text_input("Link Foto ImgBB Bulan Ini (Direct Link .jpg/.png):", placeholder="https://i.ibb.co/xxxx/foto.jpg")
         evaluasi_umum = st.text_area("Evaluasi Umum & Catatan Diri Bulan Ini", placeholder="Refleksi dan catatan hal yang perlu ditingkatkan bulan depan...")
