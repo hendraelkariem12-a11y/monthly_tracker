@@ -125,13 +125,14 @@ html, body, [class*="css"] {{
     color: #38bdf8;
 }}
 
+/* KARTU WADAH HITAM TRANSPARAN */
 .summary-box {{
     background: rgba(2, 6, 23, 0.85);
     border-radius: 14px;
     padding: 18px;
     border: 1px solid rgba(234, 179, 8, 0.2);
     margin-bottom: 12px;
-    min-height: 180px;
+    min-height: 120px;
 }}
 
 .category-icon-title {{
@@ -151,8 +152,10 @@ html, body, [class*="css"] {{
     color: #94a3b8;
     font-size: 0.85rem;
     font-style: italic;
-    margin-left: 15px;
-    margin-bottom: 8px;
+    margin-top: 4px;
+    margin-bottom: 10px;
+    padding-left: 10px;
+    border-left: 2px solid #38bdf8;
 }}
 
 #MainMenu {{visibility: hidden;}}
@@ -288,76 +291,81 @@ if menu == "📖 Timeline Progress Bulanan":
                     
                     # 1. PENGETAHUAN
                     with col_p:
-                        st.markdown(f"""
+                        html_peng = f"""
                         <div class="summary-box">
                             <div class="category-icon-title">
                                 <img src="{IMG_ICON_PENG}">
                                 <h4 style="color:#38bdf8; margin:0;">Pengetahuan</h4>
                             </div>
-                        """, unsafe_allow_html=True)
+                        """
                         df_peng = df_month[df_month["Kategori"] == "Pengetahuan"]
                         if not df_peng.empty:
                             for metrik, grp in df_peng.groupby("Metrik / Nama Kegiatan"):
                                 tot_val = grp["Nilai"].sum()
                                 if tot_val > 0:
                                     satuan = grp["Satuan"].iloc[0]
-                                    st.markdown(f"• **{metrik}**: `{tot_val}` {satuan}")
-                                    # Ambil catatan yang ada
+                                    html_peng += f"<p style='margin-bottom:2px;'>• <b>{metrik}</b>: <code>{tot_val}</code> {satuan}</p>"
                                     notes = [str(n).strip() for n in grp["Catatan"].tolist() if str(n).strip() != ""]
                                     if notes:
                                         catatan_str = ", ".join(notes)
-                                        st.markdown(f'<div class="note-text">📝 <i>Catatan: {catatan_str}</i></div>', unsafe_allow_html=True)
+                                        html_peng += f'<div class="note-text">📝 <i>Catatan: {catatan_str}</i></div>'
                         else:
-                            st.write("Belum ada data.")
-                        st.markdown('</div>', unsafe_allow_html=True)
+                            html_peng += "<p>Belum ada data.</p>"
+                        
+                        html_peng += "</div>"
+                        st.markdown(html_peng, unsafe_allow_html=True)
 
                     # 2. AGAMA
                     with col_a:
-                        st.markdown(f"""
+                        html_agm = f"""
                         <div class="summary-box">
                             <div class="category-icon-title">
                                 <img src="{IMG_ICON_AGAMA}">
                                 <h4 style="color:#4ade80; margin:0;">Agama & Amalan</h4>
                             </div>
-                        """, unsafe_allow_html=True)
+                        """
                         df_agm = df_month[df_month["Kategori"] == "Agama"]
                         if not df_agm.empty:
                             for metrik, grp in df_agm.groupby("Metrik / Nama Kegiatan"):
                                 tot_val = grp["Nilai"].sum()
                                 if tot_val > 0:
                                     satuan = grp["Satuan"].iloc[0]
-                                    st.markdown(f"• **{metrik}**: `{tot_val}` {satuan}")
+                                    html_agm += f"<p style='margin-bottom:2px;'>• <b>{metrik}</b>: <code>{tot_val}</code> {satuan}</p>"
                                     notes = [str(n).strip() for n in grp["Catatan"].tolist() if str(n).strip() != ""]
                                     if notes:
                                         catatan_str = ", ".join(notes)
-                                        st.markdown(f'<div class="note-text">📝 <i>Catatan: {catatan_str}</i></div>', unsafe_allow_html=True)
+                                        html_agm += f'<div class="note-text">📝 <i>Catatan: {catatan_str}</i></div>'
                         else:
-                            st.write("Belum ada data.")
-                        st.markdown('</div>', unsafe_allow_html=True)
+                            html_agm += "<p>Belum ada data.</p>"
+                        
+                        html_agm += "</div>"
+                        st.markdown(html_agm, unsafe_allow_html=True)
 
                     # 3. KESEHATAN
                     with col_k:
-                        st.markdown(f"""
+                        html_kes = f"""
                         <div class="summary-box">
                             <div class="category-icon-title">
                                 <img src="{IMG_ICON_KES}">
                                 <h4 style="color:#f43f5e; margin:0;">Kesehatan</h4>
                             </div>
-                        """, unsafe_allow_html=True)
+                        """
                         df_kes = df_month[df_month["Kategori"] == "Kesehatan"]
                         if not df_kes.empty:
                             for metrik, grp in df_kes.groupby("Metrik / Nama Kegiatan"):
                                 tot_val = grp["Nilai"].sum()
                                 if tot_val > 0:
                                     satuan = grp["Satuan"].iloc[0]
-                                    st.markdown(f"• **{metrik}**: `{tot_val}` {satuan}")
+                                    html_kes += f"<p style='margin-bottom:2px;'>• <b>{metrik}</b>: <code>{tot_val}</code> {satuan}</p>"
                                     notes = [str(n).strip() for n in grp["Catatan"].tolist() if str(n).strip() != ""]
                                     if notes:
                                         catatan_str = ", ".join(notes)
-                                        st.markdown(f'<div class="note-text">📝 <i>Catatan: {catatan_str}</i></div>', unsafe_allow_html=True)
+                                        html_kes += f'<div class="note-text">📝 <i>Catatan: {catatan_str}</i></div>'
                         else:
-                            st.write("Belum ada data.")
-                        st.markdown('</div>', unsafe_allow_html=True)
+                            html_kes += "<p>Belum ada data.</p>"
+                        
+                        html_kes += "</div>"
+                        st.markdown(html_kes, unsafe_allow_html=True)
 
             # POSISI KEUANGAN
             st.markdown(f"""
