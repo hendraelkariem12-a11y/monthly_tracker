@@ -7,7 +7,7 @@ import plotly.express as px
 # ---------------------------------------------------------
 # CONFIG & KONEKSI GOOGLE SHEETS
 # ---------------------------------------------------------
-st.set_page_config(page_title="Monthly Progress Journal", layout="centered", page_icon="📈")
+st.set_page_config(page_title="Monthly Progress & Finance Journal", layout="centered", page_icon="📈")
 
 @st.cache_resource
 def get_gspread_client():
@@ -43,27 +43,22 @@ def load_data(worksheet):
 # ---------------------------------------------------------
 st.sidebar.title("📌 Menu Utama")
 menu = st.sidebar.radio("Pilih Halaman:", [
-    "📖 Riwayat Progress Bulanan",
+    "📖 Timeline Progress Bulanan",
     "📝 Input Progress Mingguan",
-    "🎯 Input Pencapaian Bulanan",
+    "🎯 Input Evaluasi & Foto Bulanan",
     "⚙️ Kelola Metrik & Kategori Baru"
 ])
 
-# Link Foto Profil ImgBB Default (Bisa diubah di sidebar)
-with st.sidebar.expander("🖼️ Pengaturan Foto Profil"):
-    foto_url = st.text_input("Link Foto ImgBB (Direct Link):", value="https://i.ibb.co/sample-image.jpg")
-
 # ---------------------------------------------------------
-# 1. RIWAYAT PROGRESS BULANAN (TIMELINE SCROLL KE BAWAH)
+# 1. TIMELINE PROGRESS BULANAN (FOTO PER BULAN + NERACA KEUANGAN)
 # ---------------------------------------------------------
-if menu == "📖 Riwayat Progress Bulanan":
-    st.title("📖 Jurnal Perkembangan Diri")
-    st.write("Scroll ke bawah untuk melihat riwayat pencapaian kamu dari bulan ke bulan.")
+if menu == "📖 Timeline Progress Bulanan":
+    st.title("📖 Jurnal & Timeline Perkembangan Diri")
+    st.write("Merekam perjalanan fisik, pengetahuan, ibadah, kesehatan, dan kondisi keuangan dari bulan ke bulan.")
 
     df_log = load_data(ws_log)
     df_b = load_data(ws_bulanan)
 
-    # Ambil semua daftar bulan unik yang tersimpan di database
     bulan_list = []
     if not df_log.empty and "Bulan" in df_log.columns:
         bulan_list = list(df_log["Bulan"].unique())
@@ -74,58 +69,67 @@ if menu == "📖 Riwayat Progress Bulanan":
                 bulan_list.append(b)
 
     if not bulan_list:
-        st.info("Belum ada data bulan yang diinput. Silakan mulai input di menu 'Input Progress Mingguan'.")
+        st.info("Belum ada data yang diinput. Mulai dari menu 'Input Progress Mingguan' atau 'Input Evaluasi & Foto Bulanan'.")
     else:
-        # Tampilkan setiap bulan secara berurutan ke bawah (Terbaru ke Terlama)
-        for idx, bulan_item in enumerate(reversed(bulan_list)):
+        # Tampilkan riwayat dari bulan terbaru ke terlama (Scroll ke bawah)
+        for bulan_item in reversed(bulan_list):
             st.markdown(f"# 📅 Bulan {bulan_item}")
             
-            # 1. Foto Profil & Header Nama
-            col_img, col_name = st.columns([1, 2])
-            with col_img:
-                if foto_url and foto_url != "https://i.ibb.co/sample-image.jpg":
-                    st.image(foto_url, use_container_width=True)
-                else:
-                    st.image("https://via.placeholder.com/150", caption="Dede Suhendra", use_container_width=True)
-            with col_name:
-                st.subheader("Dede Suhendra")
-                st.caption(f"Laporan Perkembangan — {bulan_item}")
-                
-                # Ambil Evaluasi Bulanan
-                evaluasi_text = "Belum ada catatan evaluasi untuk bulan ini."
-                if not df_b.empty and "Bulan" in df_b.columns:
-                    df_b_filter = df_b[df_b["Bulan"] == bulan_item]
-                    if not df_b_filter.empty:
-                        evaluasi_text = df_b_filter.iloc[-1].get('Evaluasi Umum & Catatan', evaluasi_text)
-                
-                st.info(f"💡 **Evaluasi Diri:**\n_{evaluasi_text}_")
+            # Ambil data evaluasi & foto bulanan
+            foto_bulan = "https://via.placeholder.com/300x400?text=Foto+Belum+Diupload"
+            evaluasi_text = "Belum ada catatan evaluasi untuk bulan ini."
+            
+            if not df_b.empty and "Bulan" in df_b.columns:
+                df_b_filter = df_b[df_b["Bulan"] == bulan_item]
+                if not df_b_filter.empty:
+                    row_b = df_b_filter.iloc[-1]
+                    evaluasi_text = row_b.get('Evaluasi Umum & Catatan', evaluasi_text)
+                    if row_b.get('Foto_URL') and str(row_b.get('Foto_URL')).strip() != "":
+                        foto_bulan = str(row_b.get('Foto_URL')).strip()
 
-            # 2. Ringkasan Angka Kunci Bulan Ini
+            # Tampilan Profil Per Bulan
+            col_img, col_info = st.columns([1, 2], gap="medium")
+            with col_img:
+                st.image(foto_bulan, caption=f"Foto Fisik — {bulan_item}", use_container_width=True)
+            with col_info:
+                st.subheader("Dede Suhendra")
+                st.caption(f"Laporan Perkembangan Diri — {bulan_item}")
+                st.info(f"💡 **Evaluasi & Catatan Diri:**\n\n_{evaluasi_text}_")
+
+            # Tampilkan Ringkasan Keuangan Real-time (Balance Sheet)
             if not df_log.empty and "Bulan" in df_log.columns:
                 df_filtered = df_log[df_log["Bulan"] == bulan_item]
                 
                 if not df_filtered.empty:
-                    st.markdown("#### 🎯 Key Metrics Bulan Ini")
-                    df_agg = df_filtered.groupby(["Kategori", "Metrik / Nama Kegiatan"])["Nilai"].sum().reset_index()
+                    st.markdown("### 💰 Perkembangan Keuangan Bulan Ini")
+                    df_keu = df_filtered[df_filtered["Kategori"] == "Keuangan"]
                     
-                    c1, c2, c3, c4 = st.columns(4)
-                    
-                    b_inggris = df_agg[df_agg["Metrik / Nama Kegiatan"] == "Belajar B. Inggris"]["Nilai"].sum() if not df_agg.empty else 0
-                    quran_juz = df_agg[df_agg["Metrik / Nama Kegiatan"] == "Baca Qur'an"]["Nilai"].sum() if not df_agg.empty else 0
-                    jogging_min = df_agg[df_agg["Metrik / Nama Kegiatan"] == "Jogging"]["Nilai"].sum() if not df_agg.empty else 0
-                    
-                    pemasukan = df_agg[df_agg["Metrik / Nama Kegiatan"] == "Pemasukan"]["Nilai"].sum() if not df_agg.empty else 0
-                    pengeluaran = df_agg[df_agg["Metrik / Nama Kegiatan"] == "Pengeluaran"]["Nilai"].sum() if not df_agg.empty else 0
-                    tabungan = pemasukan - pengeluaran
+                    if not df_keu.empty:
+                        # Ambil nilai terakhir (atau total)
+                        s_bank = df_keu[df_keu["Metrik / Nama Kegiatan"].str.contains("Bank", case=False, na=False)]["Nilai"].sum()
+                        s_dana = df_keu[df_keu["Metrik / Nama Kegiatan"].str.contains("DANA", case=False, na=False)]["Nilai"].sum()
+                        s_cash = df_keu[df_keu["Metrik / Nama Kegiatan"].str.contains("Cash", case=False, na=False)]["Nilai"].sum()
+                        s_piutang = df_keu[df_keu["Metrik / Nama Kegiatan"].str.contains("Piutang", case=False, na=False)]["Nilai"].sum()
+                        s_utang = df_keu[df_keu["Metrik / Nama Kegiatan"].str.contains("Utang Saya", case=False, na=False)]["Nilai"].sum()
 
-                    c1.metric("📚 B. Inggris", f"{b_inggris} Min")
-                    c2.metric("📖 Qur'an", f"{quran_juz} Juz")
-                    c3.metric("🏃 Jogging", f"{jogging_min} Min")
-                    c4.metric("💰 Tabungan", f"Rp {tabungan:,.0f}")
+                        total_aset = s_bank + s_dana + s_cash + s_piutang
+                        net_worth = total_aset - s_utang
 
-                    # 3. Tab Detail Kategori & Grafik
-                    with st.expander(f"🔍 Lihat Detail Catatan Mingguan & Grafik ({bulan_item})"):
-                        t1, t2, t3, t4 = st.tabs(["🧠 Pengetahuan", "🕌 Agama", "🏃 Kesehatan", "💵 Keuangan"])
+                        f1, f2, f3 = st.columns(3)
+                        f1.metric("💳 Bank", f"Rp {s_bank:,.0f}")
+                        f2.metric("📱 DANA", f"Rp {s_dana:,.0f}")
+                        f3.metric("💵 Cash", f"Rp {s_cash:,.0f}")
+
+                        f4, f5, f6 = st.columns(3)
+                        f4.metric("🤝 Piutang (Diutangin)", f"Rp {s_piutang:,.0f}")
+                        f5.metric("⚠️ Utang Saya", f"Rp {s_utang:,.0f}", delta=f"-Rp {s_utang:,.0f}", delta_color="inverse")
+                        f6.metric("💎 Total Kekayaan Bersih", f"Rp {net_worth:,.0f}")
+
+                    st.markdown("---")
+                    
+                    # Tab Detail Kategori
+                    with st.expander(f"🔍 Lihat Detail Aktivitas Mingguan ({bulan_item})"):
+                        t1, t2, t3, t4 = st.tabs(["🧠 Pengetahuan", "🕌 Agama", "🏃 Kesehatan", "💵 Keuangan Detail"])
                         
                         with t1:
                             st.dataframe(df_filtered[df_filtered["Kategori"] == "Pengetahuan"][["Minggu", "Metrik / Nama Kegiatan", "Nilai", "Satuan", "Catatan"]], use_container_width=True)
@@ -136,20 +140,6 @@ if menu == "📖 Riwayat Progress Bulanan":
                         with t4:
                             st.dataframe(df_filtered[df_filtered["Kategori"] == "Keuangan"][["Minggu", "Metrik / Nama Kegiatan", "Nilai", "Satuan", "Catatan"]], use_container_width=True)
 
-                        # Grafik Tren
-                        fig = px.bar(
-                            df_filtered, 
-                            x="Minggu", 
-                            y="Nilai", 
-                            color="Metrik / Nama Kegiatan", 
-                            barmode="group",
-                            title=f"Tren Mingguan {bulan_item}"
-                        )
-                        st.plotly_chart(fig, use_container_width=True)
-                else:
-                    st.warning(f"Belum ada data detail mingguan untuk bulan {bulan_item}.")
-
-            # Pembatas Antar Bulan di Timeline
             st.markdown("---")
             st.markdown("<br>", unsafe_allow_html=True)
 
@@ -158,7 +148,7 @@ if menu == "📖 Riwayat Progress Bulanan":
 # ---------------------------------------------------------
 elif menu == "📝 Input Progress Mingguan":
     st.title("📝 Form Input Progress Mingguan")
-    st.write("Catat perkembangan mingguan kamu untuk pengetahuan, agama, kesehatan, dan keuangan.")
+    st.write("Catat perkembangan angka mingguan kamu.")
 
     df_custom = load_data(ws_custom)
     
@@ -178,8 +168,11 @@ elif menu == "📝 Input Progress Mingguan":
             {"Kategori": "Kesehatan", "Nama Metrik": "Jogging", "Satuan": "Menit"},
             {"Kategori": "Kesehatan", "Nama Metrik": "Push Up", "Satuan": "Reps"},
             {"Kategori": "Kesehatan", "Nama Metrik": "Squat Jump", "Satuan": "Reps"},
-            {"Kategori": "Keuangan", "Nama Metrik": "Pemasukan", "Satuan": "Rp"},
-            {"Kategori": "Keuangan", "Nama Metrik": "Pengeluaran", "Satuan": "Rp"}
+            {"Kategori": "Keuangan", "Nama Metrik": "Saldo Bank", "Satuan": "Rp"},
+            {"Kategori": "Keuangan", "Nama Metrik": "Saldo DANA", "Satuan": "Rp"},
+            {"Kategori": "Keuangan", "Nama Metrik": "Cash / Tunai", "Satuan": "Rp"},
+            {"Kategori": "Keuangan", "Nama Metrik": "Piutang (Dibutuhkan Orang)", "Satuan": "Rp"},
+            {"Kategori": "Keuangan", "Nama Metrik": "Utang Saya", "Satuan": "Rp"}
         ]
         ws_custom.append_rows([list(d.values()) for d in default_metrics])
         df_custom = load_data(ws_custom)
@@ -225,36 +218,38 @@ elif menu == "📝 Input Progress Mingguan":
             st.success(f"✅ Data perkembangan untuk {bulan} ({minggu}) berhasil disimpan!")
 
 # ---------------------------------------------------------
-# 3. INPUT PENCAPAIAN BULANAN
+# 3. INPUT EVALUASI & FOTO BULANAN
 # ---------------------------------------------------------
-elif menu == "🎯 Input Pencapaian Bulanan":
-    st.title("🎯 Pencapaian Umum 1 Bulan")
-    st.write("Tuliskan evaluasi & pencapaian umum kualitatif di akhir bulan.")
+elif menu == "🎯 Input Evaluasi & Foto Bulanan":
+    st.title("🎯 Form Evaluasi & Upload Foto Bulanan")
+    st.write("Upload foto diri kamu bulan ini dan tuliskan ringkasan evaluasi bulanan.")
 
     with st.form("form_bulanan"):
         bulan_eval = st.selectbox("Pilih Bulan", ["Januari", "Februari", "Maret", "April", "Mei", "Juni", 
                                                   "Juli", "Agustus", "September", "Oktober", "November", "Desember"])
         
-        pengetahuan_eval = st.text_area("Pencapaian Pengetahuan", placeholder="Misal: Berhasil menamatkan 2 buku & konsisten latihan B. Inggris...")
-        agama_eval = st.text_area("Pencapaian Agama", placeholder="Misal: Alhamdulillah salat tahajud dan dhuha rutin, hafalan bertambah...")
-        kesehatan_eval = st.text_area("Pencapaian Kesehatan", placeholder="Misal: Fisik terasa lebih segar, jogging rutin tiap akhir pekan...")
-        keuangan_eval = st.text_area("Pencapaian Keuangan", placeholder="Misal: Cashflow positif, pengeluaran terkelola dengan baik...")
-        evaluasi_umum = st.text_area("Evaluasi Umum & Catatan Diri", placeholder="Poin-poin evaluasi yang perlu ditingkatkan bulan depan...")
+        foto_url_input = st.text_input("Link Foto ImgBB Bulan Ini (Direct Link .jpg/.png):", placeholder="https://i.ibb.co/xxxx/foto.jpg")
+        
+        pengetahuan_eval = st.text_area("Pencapaian Pengetahuan", placeholder="Ringkasan buku, artikel, dan bahasa yang dipelajari...")
+        agama_eval = st.text_area("Pencapaian Agama", placeholder="Ringkasan ibadah, hafalan, dan amalan...")
+        kesehatan_eval = st.text_area("Pencapaian Kesehatan", placeholder="Perkembangan fisik, olahraga, dan kondisi tubuh...")
+        keuangan_eval = st.text_area("Pencapaian Keuangan", placeholder="Perkembangan aset, tabungan, atau pelunasan utang...")
+        evaluasi_umum = st.text_area("Evaluasi Umum & Catatan Diri", placeholder="Evaluasi hal yang perlu diperbaiki bulan depan...")
 
-        submit_bulanan = st.form_submit_button("💾 Simpan Evaluasi Bulanan")
+        submit_bulanan = st.form_submit_button("💾 Simpan Evaluasi & Foto Bulanan")
 
     if submit_bulanan:
         with st.spinner("Menyimpan ke Google Sheets..."):
-            row_bulanan = [bulan_eval, pengetahuan_eval, agama_eval, kesehatan_eval, keuangan_eval, evaluasi_umum]
+            row_bulanan = [bulan_eval, pengetahuan_eval, agama_eval, kesehatan_eval, keuangan_eval, evaluasi_umum, foto_url_input]
             ws_bulanan.append_row(row_bulanan)
-            st.success(f"✅ Evaluasi bulanan untuk {bulan_eval} berhasil disimpan!")
+            st.success(f"✅ Evaluasi & Foto bulanan untuk {bulan_eval} berhasil disimpan!")
 
 # ---------------------------------------------------------
 # 4. KELOLA METRIK & KATEGORI BARU
 # ---------------------------------------------------------
 elif menu == "⚙️ Kelola Metrik & Kategori Baru":
     st.title("⚙️ Tambah Metrik / Kategori Baru")
-    st.write("Gunakan menu ini jika di kemudian hari ingin menambah parameter atau kategori tracker baru.")
+    st.write("Gunakan menu ini jika di kemudian hari ingin menambah parameter baru.")
 
     df_custom = load_data(ws_custom)
     
