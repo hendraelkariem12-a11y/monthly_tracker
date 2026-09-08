@@ -8,53 +8,57 @@ import plotly.express as px
 # CONFIG & PAGE SETUP
 # ---------------------------------------------------------
 st.set_page_config(
-    page_title="Monthly Progress & Finance Journal",
+    page_title="Hendra's MLBB & Tech Progress Tracker",
     layout="wide",
-    page_icon="⚡",
+    page_icon="🛡️",
     initial_sidebar_state="expanded"
 )
 
 # ---------------------------------------------------------
-# CUSTOM INJECTED CSS (ANIMATIONS, GRADIENTS, GLASSMORPHISM)
+# CUSTOM CSS: GAMER, TECH & BOOK THEME (MLBB NEON GLASS)
 # ---------------------------------------------------------
 custom_css = """
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;600&family=Plus+Jakarta+Sans:wght@300;400;600;700;800&display=swap');
 
-/* Global Font & Background Styling */
+/* Global Font & Theme Background */
 html, body, [class*="css"] {
     font-family: 'Plus Jakarta Sans', sans-serif;
 }
 
+code, pre {
+    font-family: 'Fira Code', monospace !important;
+}
+
 .stApp {
-    background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #0f172a 100%);
+    background: radial-gradient(circle at top right, #1e1b4b, #0f172a 60%, #020617 100%);
     color: #f8fafc;
 }
 
-/* Keyframe Animations */
+/* Animations */
 @keyframes fadeIn {
-    from { opacity: 0; transform: translateY(20px); }
+    from { opacity: 0; transform: translateY(15px); }
     to { opacity: 1; transform: translateY(0); }
 }
 
-@keyframes pulseGlow {
-    0% { box-shadow: 0 0 15px rgba(99, 102, 241, 0.4); }
-    50% { box-shadow: 0 0 30px rgba(168, 85, 247, 0.7); }
-    100% { box-shadow: 0 0 15px rgba(99, 102, 241, 0.4); }
+@keyframes pulseHero {
+    0% { box-shadow: 0 0 10px rgba(234, 179, 8, 0.3); }
+    50% { box-shadow: 0 0 25px rgba(234, 179, 8, 0.7); }
+    100% { box-shadow: 0 0 10px rgba(234, 179, 8, 0.3); }
 }
 
-@keyframes floatAnim {
-    0% { transform: translateY(0px); }
-    50% { transform: translateY(-8px); }
-    100% { transform: translateY(0px); }
+@keyframes floatHero {
+    0% { transform: translateY(0px) rotate(0deg); }
+    50% { transform: translateY(-8px) rotate(1deg); }
+    100% { transform: translateY(0px) rotate(0deg); }
 }
 
-/* Glassmorphism Cards */
+/* Glassmorphism Card Style */
 .glass-card {
-    background: rgba(30, 41, 59, 0.7) !important;
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: rgba(15, 23, 42, 0.75) !important;
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(234, 179, 8, 0.2);
     border-radius: 20px;
     padding: 24px;
     margin-bottom: 24px;
@@ -63,106 +67,102 @@ html, body, [class*="css"] {
 }
 
 .glass-card:hover {
-    transform: translateY(-5px);
-    border-color: rgba(168, 85, 247, 0.4);
-    box-shadow: 0 12px 30px -10px rgba(168, 85, 247, 0.3);
+    transform: translateY(-4px);
+    border-color: rgba(234, 179, 8, 0.5);
+    box-shadow: 0 12px 30px -10px rgba(234, 179, 8, 0.25);
 }
 
-/* Gradient Text Headers */
-.gradient-header {
-    background: linear-gradient(90deg, #38bdf8 0%, #a855f7 50%, #f43f5e 100%);
+/* Header & Titles */
+.mlbb-header {
+    background: linear-gradient(90deg, #38bdf8 0%, #eab308 50%, #a855f7 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     font-weight: 800;
     letter-spacing: -0.5px;
 }
 
-.timeline-badge {
+.hero-badge {
     display: inline-block;
     padding: 6px 16px;
     border-radius: 9999px;
-    background: linear-gradient(90deg, #6366f1, #a855f7);
-    color: white;
-    font-weight: 700;
+    background: linear-gradient(90deg, #d97706, #eab308);
+    color: #020617;
+    font-weight: 800;
     font-size: 0.85rem;
-    box-shadow: 0 4px 14px rgba(168, 85, 247, 0.4);
-    animation: pulseGlow 3s infinite;
+    letter-spacing: 0.5px;
+    animation: pulseHero 2.5s infinite;
     margin-bottom: 12px;
 }
 
-/* Custom Metric Card Style */
+/* Metric Box Gamer Style */
 .metric-box {
-    background: rgba(15, 23, 42, 0.6);
+    background: rgba(30, 41, 59, 0.6);
     border-radius: 16px;
     padding: 16px;
     border: 1px solid rgba(255, 255, 255, 0.08);
     text-align: center;
-    transition: transform 0.2s ease;
+    transition: transform 0.2s ease, border-color 0.2s ease;
 }
 
 .metric-box:hover {
-    transform: scale(1.03);
-    background: rgba(30, 41, 59, 0.8);
+    transform: scale(1.04);
+    border-color: #eab308;
+    background: rgba(30, 41, 59, 0.9);
 }
 
 .metric-label {
-    font-size: 0.82rem;
+    font-size: 0.78rem;
     color: #94a3b8;
-    font-weight: 600;
+    font-weight: 700;
     text-transform: uppercase;
-    letter-spacing: 0.5px;
 }
 
 .metric-value {
-    font-size: 1.2rem;
+    font-size: 1.25rem;
     font-weight: 800;
     margin-top: 6px;
     color: #38bdf8;
 }
 
-/* Photo Frame Animation */
+/* Photo Frame with MLBB Border */
 .photo-frame {
     border-radius: 20px;
     overflow: hidden;
-    border: 2px solid rgba(168, 85, 247, 0.5);
-    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.5);
-    animation: floatAnim 4s ease-in-out infinite;
+    border: 3px solid #eab308;
+    box-shadow: 0 8px 25px rgba(234, 179, 8, 0.3);
+    animation: floatHero 4s ease-in-out infinite;
 }
 
-/* Streamlit Native UI Overrides */
+.summary-box {
+    background: rgba(2, 6, 23, 0.8);
+    border-radius: 14px;
+    padding: 16px;
+    border: 1px solid rgba(56, 189, 248, 0.2);
+    margin-bottom: 12px;
+}
+
+/* Customizing Sidebar & Buttons */
 div[data-baseweb="select"] > div {
     background-color: rgba(30, 41, 59, 0.8) !important;
     border-radius: 12px !important;
-    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    border: 1px solid rgba(234, 179, 8, 0.3) !important;
     color: white !important;
 }
 
 .stButton > button {
-    background: linear-gradient(90deg, #6366f1 0%, #a855f7 100%) !important;
-    color: white !important;
-    font-weight: 700 !important;
+    background: linear-gradient(90deg, #d97706 0%, #eab308 100%) !important;
+    color: #020617 !important;
+    font-weight: 800 !important;
     border-radius: 12px !important;
     border: none !important;
     padding: 12px 24px !important;
-    box-shadow: 0 4px 15px rgba(99, 102, 241, 0.4) !important;
+    box-shadow: 0 4px 15px rgba(234, 179, 8, 0.4) !important;
     transition: all 0.3s ease !important;
 }
 
 .stButton > button:hover {
     transform: translateY(-2px) scale(1.02) !important;
-    box-shadow: 0 8px 25px rgba(168, 85, 247, 0.6) !important;
-}
-
-button[data-baseweb="tab"] {
-    font-weight: 700 !important;
-    border-radius: 10px !important;
-    color: #94a3b8 !important;
-}
-
-button[aria-selected="true"] {
-    background: linear-gradient(90deg, rgba(99, 102, 241, 0.2), rgba(168, 85, 247, 0.2)) !important;
-    color: #38bdf8 !important;
-    border-bottom: 2px solid #a855f7 !important;
+    box-shadow: 0 8px 25px rgba(234, 179, 8, 0.7) !important;
 }
 
 #MainMenu {visibility: hidden;}
@@ -195,7 +195,7 @@ try:
         
     ws_bulanan = spreadsheet.worksheet("Pencapaian_Bulanan")
 except Exception as e:
-    st.error(f"⚠️ Gagal terhubung ke Google Sheets: {e}")
+    st.error(f"⚠️ Connection Lost! Gagal terhubung ke MLBB Server (Google Sheets): {e}")
     st.info("Pastikan Secrets st.secrets['gcp_service_account'] terpasang dengan benar di Streamlit Cloud.")
     st.stop()
 
@@ -204,17 +204,34 @@ def load_data(worksheet):
     return pd.DataFrame(data)
 
 # ---------------------------------------------------------
-# SIDEBAR NAVIGATION
+# SIDEBAR NAVIGATION (MLBB GAMER STYLE)
 # ---------------------------------------------------------
-st.sidebar.markdown('<h2 class="gradient-header">⚡ NAVIGATION</h2>', unsafe_allow_html=True)
+st.sidebar.markdown('<h2 class="mlbb-header">⚔️ MAIN MENU</h2>', unsafe_allow_html=True)
+st.sidebar.caption("🎮 Mode: Roamer & EXP Lane | 💻 Dev Mode: Python Active")
+
 menu = st.sidebar.radio("", [
     "📖 Timeline Progress Bulanan",
     "📝 Input Progress Mingguan",
-    "🎯 Input Evaluasi & Foto Bulanan",
+    "🎯 Upload Foto & Evaluasi Bulanan",
     "⚙️ Kelola Metrik & Kategori Baru"
 ])
 
-# HELPER SALDO TERAKHIR (CARRY OVER KEUANGAN)
+# HEROES QUOTES & BANNER RANDOMIZER
+quotes_mlbb = [
+    "🛡️ Minotaur: 'My son, feel the roar of my hammer!' — Tetap badak dan konsisten!",
+    "⚓ Franco: 'One shot, one kill!' — Target bulan ini harus ditarik semua!",
+    "⚔️ Tigreal: 'A real warrior never runs!' — Pantang menyerah belajar & ibadah!",
+    "🌊 Atlas: 'The ocean does not tolerate the weak!' — Upgrade skill terus tanpa henti!",
+    "🩸 Carmilla: 'Love is a curse, but a sweet one.' — Jaga semangat harian!",
+    "💥 Masha: 'Fight! Until your last breath!' — Gas terus push-up & olahraga!"
+]
+
+st.sidebar.divider()
+st.sidebar.markdown("### 💬 Hero Encouragement")
+import random
+st.sidebar.info(random.choice(quotes_mlbb))
+
+# HELPER SALDO TERAKHIR KEUANGAN
 def get_latest_finance_val(df_log, bulan_target, metrik_keyword):
     if df_log.empty or "Metrik / Nama Kegiatan" not in df_log.columns:
         return 0
@@ -230,11 +247,11 @@ def get_latest_finance_val(df_log, bulan_target, metrik_keyword):
     return 0
 
 # ---------------------------------------------------------
-# 1. TIMELINE PROGRESS BULANAN (ANIMATED DASHBOARD)
+# 1. TIMELINE PROGRESS BULANAN (MLBB & TECH THEME)
 # ---------------------------------------------------------
 if menu == "📖 Timeline Progress Bulanan":
-    st.markdown('<h1 class="gradient-header" style="font-size: 2.2rem; text-align: center; margin-bottom: 0px;">✨ PERSONAL JOURNAL & TIMELINE ✨</h1>', unsafe_allow_html=True)
-    st.markdown('<p style="text-align: center; color: #94a3b8; font-size: 0.95rem; margin-bottom: 30px;">Visualisasi perkembangan fisik, finansial, dan amalan dari bulan ke bulan.</p>', unsafe_allow_html=True)
+    st.markdown('<h1 class="mlbb-header" style="font-size: 2.3rem; text-align: center; margin-bottom: 0px;">⚔️ HENDRA\'S EXP & PROGRESS LOG ⚔️</h1>', unsafe_allow_html=True)
+    st.markdown('<p style="text-align: center; color: #94a3b8; font-size: 0.95rem; margin-bottom: 30px;"><code>def print_progress(): return "Leveling Up Every Month!"</code> 📚🎮💻</p>', unsafe_allow_html=True)
 
     df_log = load_data(ws_log)
     df_b = load_data(ws_bulanan)
@@ -252,13 +269,13 @@ if menu == "📖 Timeline Progress Bulanan":
                 bulan_list.append(b)
 
     if not bulan_list:
-        st.info("✨ Belum ada data yang tersimpan. Mulai isi jurnal dari menu sidebar!")
+        st.info("🎮 Welcome Player 1! Belum ada match log yang tersimpan. Mulai input di menu 'Input Progress Mingguan'!")
     else:
         for bulan_item in reversed(bulan_list):
-            st.markdown(f'<div class="timeline-badge">📅 LAPORAN PERKEMBANGAN — BULAN {bulan_item.upper()}</div>', unsafe_allow_html=True)
+            st.markdown(f'<div class="hero-badge">🏆 BATTLE LOG — BULAN {bulan_item.upper()}</div>', unsafe_allow_html=True)
             
-            foto_bulan = "https://via.placeholder.com/400x500?text=Foto+Diri+Bulan+Ini"
-            evaluasi_text = "Belum ada catatan evaluasi untuk bulan ini."
+            foto_bulan = "https://via.placeholder.com/400x500?text=Avatar+Diri+Bulan+Ini"
+            evaluasi_text = "Belum ada catatan refleksi atau patch note untuk bulan ini."
             
             if not df_b.empty and "Bulan" in df_b.columns:
                 df_b_filter = df_b[df_b["Bulan"] == bulan_item]
@@ -268,7 +285,6 @@ if menu == "📖 Timeline Progress Bulanan":
                     if row_b.get('Foto_URL') and str(row_b.get('Foto_URL')).strip() != "":
                         foto_bulan = str(row_b.get('Foto_URL')).strip()
 
-            # Glass Card Layout
             st.markdown('<div class="glass-card">', unsafe_allow_html=True)
             col_img, col_info = st.columns([1, 2], gap="large")
             
@@ -278,18 +294,62 @@ if menu == "📖 Timeline Progress Bulanan":
                 st.markdown('</div>', unsafe_allow_html=True)
                 
             with col_info:
-                st.markdown('<h2 class="gradient-header" style="margin-bottom: 4px;">Dede Suhendra</h2>', unsafe_allow_html=True)
-                st.markdown(f'<p style="color: #a855f7; font-weight: 600;">Status: Aktif Membangun Diri ({bulan_item})</p>', unsafe_allow_html=True)
+                st.markdown('<h2 class="mlbb-header" style="margin-bottom: 4px;">Dede Suhendra</h2>', unsafe_allow_html=True)
+                st.markdown(f'<p style="color: #eab308; font-weight: 700; font-size: 0.9rem;">🛡️ Main Role: Roamer / EXP Lane | 💻 Code & Books Enthuasiast ({bulan_item})</p>', unsafe_allow_html=True)
                 
                 st.markdown(f"""
-                <div style="background: rgba(15, 23, 42, 0.7); border-left: 4px solid #a855f7; padding: 16px; border-radius: 12px; margin-top: 15px;">
-                    <span style="color: #f43f5e; font-weight: 700;">💡 EVALUASI & CATATAN DIRI:</span><br>
-                    <span style="color: #e2e8f0; font-style: italic;">"{evaluasi_text}"</span>
+                <div style="background: rgba(2, 6, 23, 0.85); border-left: 4px solid #eab308; padding: 16px; border-radius: 12px; margin-top: 15px;">
+                    <span style="color: #38bdf8; font-weight: 700; font-family: 'Fira Code', monospace;">// PATCH NOTES & EVALUASI DIRI:</span><br>
+                    <span style="color: #f1f5f9; font-style: italic;">"{evaluasi_text}"</span>
                 </div>
                 """, unsafe_allow_html=True)
 
-            # FINANSIAL DASHBOARD (NEON METRICS)
-            st.markdown('<h3 style="color: #38bdf8; font-size: 1.1rem; margin-top: 25px; margin-bottom: 15px;">💎 POSISI KEUANGAN REAL-TIME (CARRY OVER)</h3>', unsafe_allow_html=True)
+            # REKAPAN OTOMATIS GAMER STYLE
+            st.markdown('<h3 style="color: #eab308; font-size: 1.1rem; margin-top: 25px; margin-bottom: 15px;">📊 REKAPAN TOTAL EXP & BUFF BULAN INI</h3>', unsafe_allow_html=True)
+            
+            if not df_log.empty and "Bulan" in df_log.columns:
+                df_month = df_log[df_log["Bulan"] == bulan_item]
+                
+                if not df_month.empty:
+                    df_sum = df_month.groupby(["Kategori", "Metrik / Nama Kegiatan", "Satuan"])["Nilai"].sum().reset_index()
+                    
+                    col_p, col_a, col_k = st.columns(3)
+                    
+                    with col_p:
+                        st.markdown('<div class="summary-box"><h4 style="color:#38bdf8; margin-top:0;">📚 Intellect & Code Buff</h4>', unsafe_allow_html=True)
+                        df_peng = df_sum[df_sum["Kategori"] == "Pengetahuan"]
+                        if not df_peng.empty:
+                            for _, r in df_peng.iterrows():
+                                if r['Nilai'] > 0:
+                                    st.markdown(f"• **{r['Metrik / Nama Kegiatan']}**: `{r['Nilai']}` {r['Satuan']}")
+                        else:
+                            st.write("Belum ada data.")
+                        st.markdown('</div>', unsafe_allow_html=True)
+
+                    with col_a:
+                        st.markdown('<div class="summary-box"><h4 style="color:#4ade80; margin-top:0;">🕌 Mana & Faith Recharge</h4>', unsafe_allow_html=True)
+                        df_agm = df_sum[df_sum["Kategori"] == "Agama"]
+                        if not df_agm.empty:
+                            for _, r in df_agm.iterrows():
+                                if r['Nilai'] > 0:
+                                    st.markdown(f"• **{r['Metrik / Nama Kegiatan']}**: `{r['Nilai']}` {r['Satuan']}")
+                        else:
+                            st.write("Belum ada data.")
+                        st.markdown('</div>', unsafe_allow_html=True)
+
+                    with col_k:
+                        st.markdown('<div class="summary-box"><h4 style="color:#f43f5e; margin-top:0;">🏃 HP Regen & Physical Defense</h4>', unsafe_allow_html=True)
+                        df_kes = df_sum[df_sum["Kategori"] == "Kesehatan"]
+                        if not df_kes.empty:
+                            for _, r in df_kes.iterrows():
+                                if r['Nilai'] > 0:
+                                    st.markdown(f"• **{r['Metrik / Nama Kegiatan']}**: `{r['Nilai']}` {r['Satuan']}")
+                        else:
+                            st.write("Belum ada data.")
+                        st.markdown('</div>', unsafe_allow_html=True)
+
+            # FINANSIAL GOLD LANE
+            st.markdown('<h3 style="color: #38bdf8; font-size: 1.1rem; margin-top: 25px; margin-bottom: 15px;">💰 GOLD LANE & NET WORTH (BALANCE SHEET)</h3>', unsafe_allow_html=True)
             
             s_bank = get_latest_finance_val(df_log, bulan_item, "Bank")
             s_dana = get_latest_finance_val(df_log, bulan_item, "DANA")
@@ -311,18 +371,16 @@ if menu == "📖 Timeline Progress Bulanan":
             with m_col4:
                 st.markdown(f'<div class="metric-box"><div class="metric-label">🤝 PIUTANG</div><div class="metric-value">Rp {s_piutang:,.0f}</div></div>', unsafe_allow_html=True)
             with m_col5:
-                st.markdown(f'<div class="metric-box" style="border-color: rgba(244, 63, 94, 0.3);"><div class="metric-label" style="color:#f43f5e;">⚠️ UTANG</div><div class="metric-value" style="color:#f43f5e;">Rp {s_utang:,.0f}</div></div>', unsafe_allow_html=True)
+                st.markdown(f'<div class="metric-box" style="border-color: rgba(244, 63, 94, 0.4);"><div class="metric-label" style="color:#f43f5e;">⚠️ UTANG</div><div class="metric-value" style="color:#f43f5e;">Rp {s_utang:,.0f}</div></div>', unsafe_allow_html=True)
             with m_col6:
-                st.markdown(f'<div class="metric-box" style="background: linear-gradient(135deg, rgba(99, 102, 241, 0.3), rgba(168, 85, 247, 0.3)); border-color: #a855f7;"><div class="metric-label" style="color:#fff;">👑 NET WORTH</div><div class="metric-value" style="color:#4ade80;">Rp {net_worth:,.0f}</div></div>', unsafe_allow_html=True)
+                st.markdown(f'<div class="metric-box" style="background: linear-gradient(135deg, rgba(217, 119, 6, 0.3), rgba(234, 179, 8, 0.3)); border-color: #eab308;"><div class="metric-label" style="color:#fff;">👑 NET WORTH</div><div class="metric-value" style="color:#4ade80;">Rp {net_worth:,.0f}</div></div>', unsafe_allow_html=True)
 
-            st.markdown('<br>', unsafe_allow_html=True)
-
-            # DETAIL AKTIVITAS NON-KEUANGAN
+            # EXPANDER DETAIL
             if not df_log.empty and "Bulan" in df_log.columns:
                 df_filtered = df_log[(df_log["Bulan"] == bulan_item) & (df_log["Kategori"] != "Keuangan")]
                 
-                with st.expander(f"📊 DETAIL PENCAPAIAN MINGGUAN ({bulan_item.upper()})"):
-                    t1, t2, t3 = st.tabs(["🧠 PENGETAHUAN", "🕌 AGAMA & AMALAN", "🏃 KESEHATAN"])
+                with st.expander(f"🔍 BREAKDOWN MATCH MINGGUAN ({bulan_item.upper()})"):
+                    t1, t2, t3 = st.tabs(["📚 BUKU & CODING", "🕌 AMALAN & IBADAH", "🏃 OLAHRAGA"])
                     
                     with t1:
                         st.dataframe(df_filtered[df_filtered["Kategori"] == "Pengetahuan"][["Minggu", "Metrik / Nama Kegiatan", "Nilai", "Satuan", "Catatan"]], use_container_width=True)
@@ -332,14 +390,14 @@ if menu == "📖 Timeline Progress Bulanan":
                         st.dataframe(df_filtered[df_filtered["Kategori"] == "Kesehatan"][["Minggu", "Metrik / Nama Kegiatan", "Nilai", "Satuan", "Catatan"]], use_container_width=True)
 
             st.markdown('</div>', unsafe_allow_html=True)
-            st.markdown('<hr style="border:0; height:1px; background: linear-gradient(90deg, transparent, rgba(168, 85, 247, 0.5), transparent); margin: 40px 0;">', unsafe_allow_html=True)
+            st.markdown('<hr style="border:0; height:1px; background: linear-gradient(90deg, transparent, rgba(234, 179, 8, 0.5), transparent); margin: 40px 0;">', unsafe_allow_html=True)
 
 # ---------------------------------------------------------
 # 2. INPUT PROGRESS MINGGUAN
 # ---------------------------------------------------------
 elif menu == "📝 Input Progress Mingguan":
-    st.markdown('<h2 class="gradient-header">📝 INPUT PROGRESS MINGGUAN</h2>', unsafe_allow_html=True)
-    st.write("Isi perkembangan mingguan kamu. Data otomatis tersimpan secara permanen di Google Sheets.")
+    st.markdown('<h2 class="mlbb-header">📝 FORM INPUT MATCH MINGGUAN</h2>', unsafe_allow_html=True)
+    st.write("Catat perolehan mingguan kamu. Sistem akan mengalkulasi totalnya secara otomatis!")
 
     df_custom = load_data(ws_custom)
     
@@ -382,7 +440,7 @@ elif menu == "📝 Input Progress Mingguan":
         kategori_list = df_custom["Kategori"].unique() if "Kategori" in df_custom.columns else []
 
         for kat in kategori_list:
-            st.markdown(f'<h3 style="color:#a855f7; margin-top:15px;">🔹 Kategori: {kat}</h3>', unsafe_allow_html=True)
+            st.markdown(f'<h3 style="color:#eab308; margin-top:15px;">🔹 Kategori: {kat}</h3>', unsafe_allow_html=True)
             metrics = df_custom[df_custom["Kategori"] == kat]
             
             for _, row in metrics.iterrows():
@@ -400,18 +458,18 @@ elif menu == "📝 Input Progress Mingguan":
                 
                 input_data.append([bulan, minggu, kat, metrik_nama, nilai, satuan, catatan])
 
-        submit_btn = st.form_submit_button("🚀 SIMPAN DATA MINGGUAN")
+        submit_btn = st.form_submit_button("🛡️ SIMPAN PROGRESS MINGGUAN")
 
     if submit_btn:
-        with st.spinner("Menyimpan ke Google Sheets..."):
+        with st.spinner("Saving match data to Google Sheets..."):
             ws_log.append_rows(input_data)
-            st.success(f"🎉 Data minggu ini untuk bulan {bulan} berhasil disimpan!")
+            st.success(f"🎉 Victory! Data minggu ini untuk bulan {bulan} berhasil disimpan!")
 
 # ---------------------------------------------------------
 # 3. INPUT EVALUASI & FOTO BULANAN
 # ---------------------------------------------------------
-elif menu == "🎯 Input Evaluasi & Foto Bulanan":
-    st.markdown('<h2 class="gradient-header">🎯 EVALUASI & FOTO DIRI BULANAN</h2>', unsafe_allow_html=True)
+elif menu == "🎯 Upload Foto & Evaluasi Bulanan":
+    st.markdown('<h2 class="mlbb-header">🎯 UPLOAD FOTO & PATCH NOTES BULANAN</h2>', unsafe_allow_html=True)
 
     with st.form("form_bulanan"):
         bulan_eval = st.selectbox("Pilih Bulan", ["Januari", "Februari", "Maret", "April", "Mei", "Juni", 
@@ -419,39 +477,35 @@ elif menu == "🎯 Input Evaluasi & Foto Bulanan":
         
         foto_url_input = st.text_input("Link Foto ImgBB Bulan Ini (Direct Link .jpg/.png):", placeholder="https://i.ibb.co/xxxx/foto.jpg")
         
-        pengetahuan_eval = st.text_area("Pencapaian Pengetahuan", placeholder="Buku yang dibaca, bahasa yang dikuasai...")
-        agama_eval = st.text_area("Pencapaian Agama", placeholder="Perkembangan amalan, hafalan, dan ibadah...")
-        kesehatan_eval = st.text_area("Pencapaian Kesehatan", placeholder="Perkembangan stamina, jogging, dan latihan fisik...")
-        keuangan_eval = st.text_area("Pencapaian Keuangan", placeholder="Perkembangan aset, tabungan, dan rencana finansial...")
-        evaluasi_umum = st.text_area("Evaluasi Umum & Pesan Diri", placeholder="Refleksi dan apa yang perlu ditingkatkan bulan depan...")
+        evaluasi_umum = st.text_area("Evaluasi Umum / Refleksi Diri Bulan Ini", placeholder="Refleksi perkembangan, evaluasi ibadah, buku yang dibaca, atau project coding...")
 
-        submit_bulanan = st.form_submit_button("🚀 SIMPAN JURNAL BULANAN")
+        submit_bulanan = st.form_submit_button("⚔️ SIMPAN JURNAL BULANAN")
 
     if submit_bulanan:
-        with st.spinner("Menyimpan ke Google Sheets..."):
-            row_bulanan = [bulan_eval, pengetahuan_eval, agama_eval, kesehatan_eval, keuangan_eval, evaluasi_umum, foto_url_input]
+        with st.spinner("Updating patch notes..."):
+            row_bulanan = [bulan_eval, "", "", "", "", evaluasi_umum, foto_url_input]
             ws_bulanan.append_row(row_bulanan)
-            st.success(f"🎉 Jurnal & Foto untuk bulan {bulan_eval} berhasil disimpan!")
+            st.success(f"🎉 Patch Note & Foto bulan {bulan_eval} berhasil di-update!")
 
 # ---------------------------------------------------------
 # 4. KELOLA METRIK BARU
 # ---------------------------------------------------------
 elif menu == "⚙️ Kelola Metrik & Kategori Baru":
-    st.markdown('<h2 class="gradient-header">⚙️ TAMBAH METRIK / KATEGORI BARU</h2>', unsafe_allow_html=True)
+    st.markdown('<h2 class="mlbb-header">⚙️ TAMBAH PARAMETER / KATEGORI BARU</h2>', unsafe_allow_html=True)
 
     df_custom = load_data(ws_custom)
     
     with st.form("form_tambah_metrik"):
-        kat_baru = st.text_input("Nama Kategori", placeholder="Misal: Side Project, Hobi...")
-        metrik_baru = st.text_input("Nama Metrik / Kegiatan", placeholder="Misal: Jam Coding, Target Belajar...")
-        satuan_baru = st.text_input("Satuan", placeholder="Misal: Jam, Menit, Reps, Rp...")
+        kat_baru = st.text_input("Nama Kategori", placeholder="Misal: Coding, Gaming, Hobi...")
+        metrik_baru = st.text_input("Nama Metrik / Kegiatan", placeholder="Misal: Commit GitHub, Rank Star...")
+        satuan_baru = st.text_input("Satuan", placeholder="Misal: Commit, Star, Jam...")
         
         submit_custom = st.form_submit_button("➕ TAMBAH PARAMETER")
 
     if submit_custom:
         if kat_baru and metrik_baru and satuan_baru:
             ws_custom.append_row([kat_baru, metrik_baru, satuan_baru])
-            st.success(f"✅ Metrik '{metrik_baru}' berhasil ditambahkan!")
+            st.success(f"✅ Parameter '{metrik_baru}' berhasil ditambahkan!")
             st.rerun()
 
     st.divider()
