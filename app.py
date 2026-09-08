@@ -202,14 +202,24 @@ menu = st.sidebar.radio("", [
     "⚙️ Kelola Metrik & Kategori Baru"
 ])
 
-# HELPER HITUNG SALDO BERJALAN DENGAN POTONGAN PENGELUARAN
+# HELPER HITUNG SALDO FLEXIBLE (MENYESUAIKAN PENAMAAN GOOGLE SHEETS)
 def get_calculated_finance_val(df_log, bulan_target, account_name):
     if df_log.empty or "Metrik / Nama Kegiatan" not in df_log.columns:
         return 0
     
-    # Total Saldo yang Diinput Langsung
-    df_saldo = df_log[df_log["Metrik / Nama Kegiatan"].str.contains(f"Saldo {account_name}", case=False, na=False)]
-    
+    # Filter kata kunci (misal: "Bank", "DANA", "Cash", "Piutang", "Utang")
+    df_met = df_log[df_log["Metrik / Nama Kegiatan"].astype(str).str.contains(account_name, case=False, na=False)]
+    if df_met.empty:
+        return 0
+        
+    # Ambil data pengeluaran spesifik jika ada
+    df_pengeluaran = df_met[df_met["Metrik / Nama Kegiatan"].astype(str).str.contains("Pengeluaran", case=False, na=False)]
+    val_pengeluaran = 0
+    if not df_pengeluaran.empty:
+        val_pengeluaran = df_pengeluaran[df_pengeluaran["Bulan"] == bulan_target]["Nilai"].sum()
+
+    # Ambil data saldo pokok
+    df_saldo = df_met[~df_met["Metrik / Nama Kegiatan"].astype(str).str.contains("Pengeluaran", case=False, na=False)]
     val_saldo = 0
     if not df_saldo.empty:
         df_curr = df_saldo[df_saldo["Bulan"] == bulan_target]
@@ -220,13 +230,6 @@ def get_calculated_finance_val(df_log, bulan_target, account_name):
             if not df_nonzero.empty:
                 val_saldo = df_nonzero["Nilai"].iloc[-1]
                 
-    # Total Pengeluaran Spesifik dari Akun Ini
-    df_pengeluaran = df_log[df_log["Metrik / Nama Kegiatan"].str.contains(f"Pengeluaran dari {account_name}", case=False, na=False)]
-    val_pengeluaran = 0
-    if not df_pengeluaran.empty:
-        val_pengeluaran = df_pengeluaran[df_pengeluaran["Bulan"] == bulan_target]["Nilai"].sum()
-        
-    # Saldo Akhir = Total Saldo - Total Pengeluaran dari Sumber Terkait
     return max(0, val_saldo - val_pengeluaran)
 
 # ---------------------------------------------------------
@@ -302,6 +305,7 @@ if menu == "📖 Timeline Progress Bulanan":
                 if not df_month.empty:
                     col_p, col_a, col_k = st.columns(3)
                     
+                    # 1. PENGETAHUAN
                     with col_p:
                         html_peng = f"""
                         <div class="summary-box">
@@ -327,6 +331,7 @@ if menu == "📖 Timeline Progress Bulanan":
                         html_peng += "</div>"
                         st.markdown(html_peng, unsafe_allow_html=True)
 
+                    # 2. AGAMA
                     with col_a:
                         html_agm = f"""
                         <div class="summary-box">
@@ -352,6 +357,7 @@ if menu == "📖 Timeline Progress Bulanan":
                         html_agm += "</div>"
                         st.markdown(html_agm, unsafe_allow_html=True)
 
+                    # 3. KESEHATAN
                     with col_k:
                         html_kes = f"""
                         <div class="summary-box">
@@ -389,7 +395,7 @@ if menu == "📖 Timeline Progress Bulanan":
             s_dana = get_calculated_finance_val(df_log, bulan_item, "DANA")
             s_cash = get_calculated_finance_val(df_log, bulan_item, "Cash")
             s_piutang = get_calculated_finance_val(df_log, bulan_item, "Piutang")
-            s_utang = get_calculated_finance_val(df_log, bulan_item, "Utang Saya")
+            s_utang = get_calculated_finance_val(df_log, bulan_item, "Utang")
 
             total_aset = s_bank + s_dana + s_cash + s_piutang
             net_worth = total_aset - s_utang
@@ -485,7 +491,7 @@ elif menu == "📝 Input Progress Mingguan":
             st.success(f"🎉 Data minggu ini untuk bulan {bulan} berhasil disimpan!")
 
 # ---------------------------------------------------------
-# 3. MENU BARU: TRANSAKSI & CATAT PENGELUARAN (PILIH SUMBER DANA)
+# 3. TRANSAKSI & CATAT PENGELUARAN
 # ---------------------------------------------------------
 elif menu == "💸 Transaksi & Catat Pengeluaran":
     st.markdown('<h2 class="gradient-header">💸 CATAT TRANSAKSI PENGELUARAN</h2>', unsafe_allow_html=True)
