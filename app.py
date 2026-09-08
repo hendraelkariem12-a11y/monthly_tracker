@@ -2,7 +2,6 @@ import streamlit as st
 import gspread
 from oauth2client.service_account import ServiceAccountCredentials
 import pandas as pd
-import plotly.express as px
 
 # ---------------------------------------------------------
 # CONFIG & PAGE SETUP
@@ -15,17 +14,17 @@ st.set_page_config(
 )
 
 # ---------------------------------------------------------
-# ASSETS MLBB IMAGE LINKS
+# ASSETS MLBB IMAGE LINKS (CLEAN TRANSPARENT PNG)
 # ---------------------------------------------------------
-IMG_FRAME = "https://i.ibb.co.com/5gC3Twwm/1788849011671.png"
-IMG_HERO_MAIN = "https://i.ibb.co.com/hxzTtgt8/1788848932501.png"
-IMG_ICON_PENG = "https://i.ibb.co.com/rKDCgC26/1788848846642.png"
-IMG_ICON_AGAMA = "https://i.ibb.co.com/jvXwwRvR/1788849113579.png"
-IMG_ICON_KES = "https://i.ibb.co.com/Rpg9mpr2/1788849195681.png"
-IMG_ICON_KEU = "https://i.ibb.co.com/TqcvQFM2/1788849240997.png"
+IMG_FRAME = "https://i.ibb.co.com/Pzgqj1wD/1788849011671-removebg-preview.png"
+IMG_HERO_MAIN = "https://i.ibb.co.com/SXmxTtfn/1788848932501-removebg-preview.png"
+IMG_ICON_PENG = "https://i.ibb.co.com/pjSJJXgJ/1788848846642-removebg-preview.png"
+IMG_ICON_AGAMA = "https://i.ibb.co.com/wrKqkpqf/1788849113579-removebg-preview.png"
+IMG_ICON_KES = "https://i.ibb.co.com/zhm13rJD/1788849195681-removebg-preview.png"
+IMG_ICON_KEU = "https://i.ibb.co.com/2YpL6vjZ/1788849240997-removebg-preview.png"
 
 # ---------------------------------------------------------
-# CUSTOM INJECTED CSS (MLBB GLASSMORPHISM UI & MIX-BLEND)
+# CUSTOM CSS (FRAME PRESISI & FOTO DIPERBESAR)
 # ---------------------------------------------------------
 custom_css = f"""
 <style>
@@ -40,54 +39,21 @@ html, body, [class*="css"] {{
     color: #f8fafc;
 }}
 
-/* Keyframe Animations */
-@keyframes fadeIn {{
-    from {{ opacity: 0; transform: translateY(15px); }}
-    to {{ opacity: 1; transform: translateY(0); }}
-}}
-
-@keyframes pulseGlow {{
-    0% {{ box-shadow: 0 0 10px rgba(234, 179, 8, 0.3); }}
-    50% {{ box-shadow: 0 0 25px rgba(234, 179, 8, 0.7); }}
-    100% {{ box-shadow: 0 0 10px rgba(234, 179, 8, 0.3); }}
-}}
-
-@keyframes floatHero {{
-    0% {{ transform: translateY(0px); }}
-    50% {{ transform: translateY(-8px); }}
-    100% {{ transform: translateY(0px); }}
-}}
-
-/* Glassmorphism Cards */
 .glass-card {{
     background: rgba(15, 23, 42, 0.75) !important;
     backdrop-filter: blur(14px);
-    -webkit-backdrop-filter: blur(14px);
     border: 1px solid rgba(234, 179, 8, 0.25);
     border-radius: 20px;
     padding: 24px;
     margin-bottom: 24px;
-    animation: fadeIn 0.8s ease-out forwards;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    position: relative;
-    overflow: hidden;
 }}
 
-.glass-card:hover {{
-    transform: translateY(-4px);
-    border-color: rgba(234, 179, 8, 0.5);
-    box-shadow: 0 12px 30px -10px rgba(234, 179, 8, 0.3);
-}}
-
-/* Header Typography */
 .gradient-header {{
     font-family: 'Rajdhani', sans-serif;
     background: linear-gradient(90deg, #38bdf8 0%, #eab308 50%, #a855f7 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     font-weight: 800;
-    letter-spacing: 0.5px;
-    text-transform: uppercase;
 }}
 
 .timeline-badge {{
@@ -98,70 +64,60 @@ html, body, [class*="css"] {{
     color: #020617;
     font-family: 'Rajdhani', sans-serif;
     font-weight: 800;
-    font-size: 0.95rem;
-    letter-spacing: 0.5px;
-    animation: pulseGlow 2.5s infinite;
     margin-bottom: 12px;
 }}
 
-/* Frame Profile Container dengan Blend Mode untuk Menghilangkan Background Putih */
-.avatar-container {{
+/* BOX CONTAINER BINGKAI MLBB & FOTO BESAR PRESISI */
+.avatar-box {{
     position: relative;
-    width: 150px;
-    height: 150px;
+    width: 180px;
+    height: 180px;
     margin: 0 auto;
 }}
 
-.avatar-img {{
-    width: 100px;
-    height: 100px;
+.user-photo {{
+    width: 130px;
+    height: 130px;
     border-radius: 50%;
     object-fit: cover;
     position: absolute;
     top: 25px;
     left: 25px;
+    z-index: 1;
+    box-shadow: inset 0 0 10px rgba(0,0,0,0.5);
 }}
 
-.avatar-frame {{
-    width: 150px;
-    height: 150px;
+.frame-overlay {{
+    width: 180px;
+    height: 180px;
     position: absolute;
     top: 0;
     left: 0;
+    z-index: 2;
     pointer-events: none;
-    mix-blend-mode: screen; /* Menyamarkan background putih/pola catur */
-    filter: contrast(120%) brightness(110%);
+    object-fit: contain;
 }}
 
-/* Hero Main Floating Overlay dengan Blend Mode */
-.floating-hero {{
-    width: 130px;
-    animation: floatHero 3.5s ease-in-out infinite;
-    mix-blend-mode: screen; /* Menyamarkan background putih/pola catur */
-    filter: contrast(120%) brightness(110%);
+.hero-img-display {{
+    max-width: 150px;
+    height: auto;
+    display: block;
+    margin: 0 auto;
+    filter: drop-shadow(0 8px 15px rgba(0,0,0,0.5));
 }}
 
-/* Metric Box Styling */
 .metric-box {{
     background: rgba(30, 41, 59, 0.6);
     border-radius: 16px;
     padding: 16px;
     border: 1px solid rgba(255, 255, 255, 0.08);
     text-align: center;
-    transition: transform 0.2s ease, border-color 0.2s ease;
-}}
-
-.metric-box:hover {{
-    transform: scale(1.03);
-    border-color: #eab308;
-    background: rgba(30, 41, 59, 0.9);
 }}
 
 .metric-label {{
     font-size: 0.8rem;
     color: #94a3b8;
     font-weight: 700;
-    text-transform: uppercase;
 }}
 
 .metric-value {{
@@ -191,43 +147,6 @@ html, body, [class*="css"] {{
     width: 32px;
     height: 32px;
     object-fit: contain;
-    mix-blend-mode: screen;
-}}
-
-/* Streamlit Native UI Overrides */
-div[data-baseweb="select"] > div {{
-    background-color: rgba(30, 41, 59, 0.8) !important;
-    border-radius: 12px !important;
-    border: 1px solid rgba(234, 179, 8, 0.3) !important;
-    color: white !important;
-}}
-
-.stButton > button {{
-    background: linear-gradient(90deg, #d97706 0%, #eab308 100%) !important;
-    color: #020617 !important;
-    font-weight: 800 !important;
-    border-radius: 12px !important;
-    border: none !important;
-    padding: 12px 24px !important;
-    box-shadow: 0 4px 15px rgba(234, 179, 8, 0.4) !important;
-    transition: all 0.3s ease !important;
-}}
-
-.stButton > button:hover {{
-    transform: translateY(-2px) scale(1.02) !important;
-    box-shadow: 0 8px 25px rgba(234, 179, 8, 0.7) !important;
-}}
-
-button[data-baseweb="tab"] {{
-    font-weight: 700 !important;
-    border-radius: 10px !important;
-    color: #94a3b8 !important;
-}}
-
-button[aria-selected="true"] {{
-    background: linear-gradient(90deg, rgba(217, 119, 6, 0.2), rgba(234, 179, 8, 0.2)) !important;
-    color: #eab308 !important;
-    border-bottom: 2px solid #eab308 !important;
 }}
 
 #MainMenu {{visibility: hidden;}}
@@ -250,7 +169,6 @@ try:
     client = get_gspread_client()
     sheet_url = "https://docs.google.com/spreadsheets/d/17-zwnUwDzk9jxx1_jnFyqJ2SSC1xHT5nZ6dZdHgfGvA/edit"
     spreadsheet = client.open_by_url(sheet_url)
-    
     ws_log = spreadsheet.worksheet("Log_Mingguan")
     
     try:
@@ -260,17 +178,13 @@ try:
         
     ws_bulanan = spreadsheet.worksheet("Pencapaian_Bulanan")
 except Exception as e:
-    st.error(f"⚠️ Gagal terhubung ke Google Sheets: {e}")
-    st.info("Pastikan Secrets st.secrets['gcp_service_account'] terpasang dengan benar di Streamlit Cloud.")
+    st.error(f"Gagal terhubung ke Google Sheets: {e}")
     st.stop()
 
 def load_data(worksheet):
     data = worksheet.get_all_records()
     return pd.DataFrame(data)
 
-# ---------------------------------------------------------
-# SIDEBAR NAVIGATION
-# ---------------------------------------------------------
 st.sidebar.markdown('<h2 class="gradient-header">📌 MENU UTAMA</h2>', unsafe_allow_html=True)
 menu = st.sidebar.radio("", [
     "📖 Timeline Progress Bulanan",
@@ -279,7 +193,6 @@ menu = st.sidebar.radio("", [
     "⚙️ Kelola Metrik & Kategori Baru"
 ])
 
-# HELPER SALDO TERAKHIR KEUANGAN
 def get_latest_finance_val(df_log, bulan_target, metrik_keyword):
     if df_log.empty or "Metrik / Nama Kegiatan" not in df_log.columns:
         return 0
@@ -298,8 +211,7 @@ def get_latest_finance_val(df_log, bulan_target, metrik_keyword):
 # 1. TIMELINE PROGRESS BULANAN
 # ---------------------------------------------------------
 if menu == "📖 Timeline Progress Bulanan":
-    st.markdown('<h1 class="gradient-header" style="font-size: 2.3rem; text-align: center; margin-bottom: 0px;">⚔️ JURNAL & TIMELINE PERKEMBANGAN DIRI ⚔️</h1>', unsafe_allow_html=True)
-    st.markdown('<p style="text-align: center; color: #94a3b8; font-size: 0.95rem; margin-bottom: 30px;">Rekapan otomatis dari seluruh pencapaian harian, mingguan, dan posisi keuangan kamu.</p>', unsafe_allow_html=True)
+    st.markdown('<h1 class="gradient-header" style="font-size: 2.2rem; text-align: center;">⚔️ JURNAL & TIMELINE PERKEMBANGAN DIRI ⚔️</h1>', unsafe_allow_html=True)
 
     df_log = load_data(ws_log)
     df_b = load_data(ws_bulanan)
@@ -317,12 +229,13 @@ if menu == "📖 Timeline Progress Bulanan":
                 bulan_list.append(b)
 
     if not bulan_list:
-        st.info("✨ Belum ada data yang tersimpan. Mulai isi jurnal dari menu 'Input Progress Mingguan'!")
+        st.info("✨ Belum ada data. Mulai dari menu 'Input Progress Mingguan' atau 'Upload Foto & Evaluasi Bulanan'!")
     else:
         for bulan_item in reversed(bulan_list):
             st.markdown(f'<div class="timeline-badge">📅 LAPORAN PERKEMBANGAN — BULAN {bulan_item.upper()}</div>', unsafe_allow_html=True)
             
-            foto_bulan = "https://via.placeholder.com/300x300?text=Foto+Diri"
+            # Default foto jika user belum upload
+            foto_bulan = "https://i.ibb.co/MBtjqXQ/no-avatar.png"
             evaluasi_text = "Belum ada catatan evaluasi khusus untuk bulan ini."
             
             if not df_b.empty and "Bulan" in df_b.columns:
@@ -335,32 +248,34 @@ if menu == "📖 Timeline Progress Bulanan":
 
             st.markdown('<div class="glass-card">', unsafe_allow_html=True)
             
-            col_avatar, col_info, col_hero = st.columns([1.2, 2.8, 1], gap="medium")
+            col_avatar, col_info, col_hero = st.columns([1.3, 2.7, 1], gap="medium")
             
             with col_avatar:
+                # Foto Diri Diperbesar Pas di Dalam Frame
                 st.markdown(f"""
-                <div class="avatar-container">
-                    <img src="{foto_bulan}" class="avatar-img">
-                    <img src="{IMG_FRAME}" class="avatar-frame">
+                <div class="avatar-box">
+                    <img src="{foto_bulan}" class="user-photo">
+                    <img src="{IMG_FRAME}" class="frame-overlay">
                 </div>
                 """, unsafe_allow_html=True)
                 
             with col_info:
                 st.markdown('<h2 class="gradient-header" style="margin-bottom: 2px;">Dede Suhendra</h2>', unsafe_allow_html=True)
-                st.markdown(f'<p style="color: #eab308; font-weight: 700; font-size: 0.9rem;">Laporan Perkembangan Diri — Bulan {bulan_item}</p>', unsafe_allow_html=True)
+                st.markdown(f'<p style="color: #eab308; font-weight: 700;">Laporan Perkembangan Diri — Bulan {bulan_item}</p>', unsafe_allow_html=True)
                 
                 st.markdown(f"""
-                <div style="background: rgba(15, 23, 42, 0.85); border-left: 4px solid #eab308; padding: 14px; border-radius: 12px; margin-top: 10px;">
+                <div style="background: rgba(15, 23, 42, 0.85); border-left: 4px solid #eab308; padding: 14px; border-radius: 12px;">
                     <span style="color: #f43f5e; font-weight: 700;">💡 EVALUASI & CATATAN DIRI:</span><br>
                     <span style="color: #e2e8f0; font-style: italic;">"{evaluasi_text}"</span>
                 </div>
                 """, unsafe_allow_html=True)
 
             with col_hero:
-                st.markdown(f'<div style="text-align: center;"><img src="{IMG_HERO_MAIN}" class="floating-hero"></div>', unsafe_allow_html=True)
+                # Hero Masha Tanpa Background
+                st.markdown(f'<img src="{IMG_HERO_MAIN}" class="hero-img-display">', unsafe_allow_html=True)
 
             # REKAPAN OTOMATIS BULANAN
-            st.markdown('<h3 style="color: #eab308; font-size: 1.1rem; margin-top: 25px; margin-bottom: 15px;">📊 REKAPAN TOTAL PENCAPAIAN BULAN INI (OTOMATIS)</h3>', unsafe_allow_html=True)
+            st.markdown('<h3 style="color: #eab308; font-size: 1.1rem; margin-top: 25px;">📊 REKAPAN TOTAL PENCAPAIAN BULAN INI (OTOMATIS)</h3>', unsafe_allow_html=True)
             
             if not df_log.empty and "Bulan" in df_log.columns:
                 df_month = df_log[df_log["Bulan"] == bulan_item]
@@ -421,10 +336,10 @@ if menu == "📖 Timeline Progress Bulanan":
                             st.write("Belum ada data.")
                         st.markdown('</div>', unsafe_allow_html=True)
 
-            # POSISI KEUANGAN REAL-TIME
+            # POSISI KEUANGAN
             st.markdown(f"""
             <div style="display:flex; align-items:center; gap:10px; margin-top:25px; margin-bottom:15px;">
-                <img src="{IMG_ICON_KEU}" style="width:28px; height:28px; mix-blend-mode:screen;">
+                <img src="{IMG_ICON_KEU}" style="width:28px; height:28px;">
                 <h3 style="color: #38bdf8; font-size: 1.1rem; margin:0;">POSISI KEUANGAN REAL-TIME (CARRY OVER)</h3>
             </div>
             """, unsafe_allow_html=True)
@@ -453,29 +368,14 @@ if menu == "📖 Timeline Progress Bulanan":
             with m_col6:
                 st.markdown(f'<div class="metric-box" style="background: linear-gradient(135deg, rgba(217, 119, 6, 0.3), rgba(234, 179, 8, 0.3)); border-color: #eab308;"><div class="metric-label" style="color:#fff;">👑 NET WORTH</div><div class="metric-value" style="color:#4ade80;">Rp {net_worth:,.0f}</div></div>', unsafe_allow_html=True)
 
-            # EXPANDER DETAIL MINGGUAN
-            if not df_log.empty and "Bulan" in df_log.columns:
-                df_filtered = df_log[(df_log["Bulan"] == bulan_item) & (df_log["Kategori"] != "Keuangan")]
-                
-                with st.expander(f"🔍 DETAIL BREAKDOWN MINGGUAN ({bulan_item.upper()})"):
-                    t1, t2, t3 = st.tabs(["🧠 PENGETAHUAN", "🕌 AGAMA & AMALAN", "🏃 KESEHATAN"])
-                    
-                    with t1:
-                        st.dataframe(df_filtered[df_filtered["Kategori"] == "Pengetahuan"][["Minggu", "Metrik / Nama Kegiatan", "Nilai", "Satuan", "Catatan"]], use_container_width=True)
-                    with t2:
-                        st.dataframe(df_filtered[df_filtered["Kategori"] == "Agama"][["Minggu", "Metrik / Nama Kegiatan", "Nilai", "Satuan", "Catatan"]], use_container_width=True)
-                    with t3:
-                        st.dataframe(df_filtered[df_filtered["Kategori"] == "Kesehatan"][["Minggu", "Metrik / Nama Kegiatan", "Nilai", "Satuan", "Catatan"]], use_container_width=True)
-
             st.markdown('</div>', unsafe_allow_html=True)
-            st.markdown('<hr style="border:0; height:1px; background: linear-gradient(90deg, transparent, rgba(234, 179, 8, 0.5), transparent); margin: 40px 0;">', unsafe_allow_html=True)
+            st.markdown('<hr style="border:0; height:1px; background: rgba(234, 179, 8, 0.3); margin: 30px 0;">', unsafe_allow_html=True)
 
 # ---------------------------------------------------------
 # 2. INPUT PROGRESS MINGGUAN
 # ---------------------------------------------------------
 elif menu == "📝 Input Progress Mingguan":
     st.markdown('<h2 class="gradient-header">📝 INPUT PROGRESS MINGGUAN</h2>', unsafe_allow_html=True)
-    st.write("Catat perkembangan mingguan kamu. Hasilnya langsung otomatis direkap secara bulanan!")
 
     df_custom = load_data(ws_custom)
     
@@ -508,7 +408,7 @@ elif menu == "📝 Input Progress Mingguan":
         col1, col2 = st.columns(2)
         with col1:
             bulan = st.selectbox("Pilih Bulan", ["Januari", "Februari", "Maret", "April", "Mei", "Juni", 
-                                                "Juli", "Agustus", "September", "Oktober", "November", "Desember"], index=8)
+                                                "Juli", "Agustus", "September", "Oktober", "November", "Desember"], index=7)
         with col2:
             minggu = st.selectbox("Pilih Minggu", ["Minggu 1", "Minggu 2", "Minggu 3", "Minggu 4"])
         
@@ -548,14 +448,12 @@ elif menu == "📝 Input Progress Mingguan":
 # ---------------------------------------------------------
 elif menu == "🎯 Upload Foto & Evaluasi Bulanan":
     st.markdown('<h2 class="gradient-header">🎯 UPLOAD FOTO & EVALUASI DIRI BULANAN</h2>', unsafe_allow_html=True)
-    st.write("Upload foto dan tuliskan refleksi evaluasi kamu di sini.")
 
     with st.form("form_bulanan"):
         bulan_eval = st.selectbox("Pilih Bulan", ["Januari", "Februari", "Maret", "April", "Mei", "Juni", 
-                                                  "Juli", "Agustus", "September", "Oktober", "November", "Desember"], index=8)
+                                                  "Juli", "Agustus", "September", "Oktober", "November", "Desember"], index=7)
         
         foto_url_input = st.text_input("Link Foto ImgBB Bulan Ini (Direct Link .jpg/.png):", placeholder="https://i.ibb.co/xxxx/foto.jpg")
-        
         evaluasi_umum = st.text_area("Evaluasi Umum & Catatan Diri Bulan Ini", placeholder="Refleksi dan catatan hal yang perlu ditingkatkan bulan depan...")
 
         submit_bulanan = st.form_submit_button("🚀 SIMPAN JURNAL BULANAN")
