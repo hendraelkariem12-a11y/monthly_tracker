@@ -466,9 +466,9 @@ elif menu == "📝 Input Progress Mingguan":
     cols = st.columns(len(kategori_list))
     for i, kat in enumerate(kategori_list):
         with cols[i]:
-            if st.button(f"📂 **{kat}**", use_container_width=True:
-                st.session_state.selected_category = kat
-                st.rerun()
+            if st.button(f"📂 {kat}", use_container_width=True):
+        st.session_state.selected_category = kat
+        st.rerun()
 
     if st.session_state.selected_category:
         st.markdown(f"#### ✏️ Langkah 2: Isi Data — {st.session_state.selected_category}")
