@@ -22,7 +22,6 @@ IMG_ICON_PENG = "https://i.ibb.co.com/pjSJJXgJ/1788848846642-removebg-preview.pn
 IMG_ICON_AGAMA = "https://i.ibb.co.com/wrKqkpqf/1788849113579-removebg-preview.png"
 IMG_ICON_KES = "https://i.ibb.co.com/zhm13rJD/1788849195681-removebg-preview.png"
 IMG_ICON_KEU = "https://i.ibb.co.com/2YpL6vjZ/1788849240997-removebg-preview.png"
-IMG_ICON_PERBAIKAN = "https://i.ibb.co.com/8jnqPZyV/repair-icon.png"
 IMG_PLACEHOLDER = "https://i.ibb.co/MBtjqXQ/no-avatar.png"
 
 # ---------------------------------------------------------
@@ -223,7 +222,6 @@ def change_html(current, previous, is_positive_good=True):
         elif diff < 0:
             return f'<div class="change-down">📉 -{format_rp(abs(diff))}</div>'
     else:
-        # Untuk kebiasaan buruk: semakin kecil semakin baik
         if diff < 0:
             return f'<div class="change-up">🎉 Berkurang {abs(diff)} kali!</div>'
         elif diff > 0:
@@ -243,7 +241,7 @@ menu = st.sidebar.radio("", [
 ])
 
 # ---------------------------------------------------------
-# 1. DASHBOARD BULANAN — PILIH TAHUN → BULAN
+# 1. DASHBOARD BULANAN — PILIH TAHUN & BULAN
 # ---------------------------------------------------------
 if menu == "📖 Dashboard Bulanan":
     st.markdown('<h1 class="gradient-header" style="font-size: 2.2rem; text-align: center;">🚀 DASHBOARD PERJALANANKU</h1>', unsafe_allow_html=True)
@@ -251,7 +249,7 @@ if menu == "📖 Dashboard Bulanan":
     df_log = load_data(ws_log)
     df_b = load_data(ws_bulanan)
 
-    # ===== PILIH TAHUN & BULAN =====
+    # PILIH TAHUN & BULAN
     st.markdown("#### 📅 Pilih Periode")
     tahun_list = ["2025", "2026", "2027"]
     bulan_list_standar = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", 
@@ -267,7 +265,7 @@ if menu == "📖 Dashboard Bulanan":
     prev_bulan = get_previous_month(bulan_item)
     st.markdown('<div style="height: 16px;"></div>', unsafe_allow_html=True)
 
-    # ===== BAGIAN PROFIL & FOTO =====
+    # DATA BULANAN
     foto_urls = []
     evaluasi_text = ""
     kejadian_text = ""
@@ -281,6 +279,7 @@ if menu == "📖 Dashboard Bulanan":
             if foto_str and foto_str != "":
                 foto_urls = [f.strip() for f in foto_str.split(",") if f.strip() != ""]
 
+    # PROFIL & FOTO
     st.markdown('<div class="glass-card">', unsafe_allow_html=True)
     col_left, col_main = st.columns([1, 3], gap="medium")
     
@@ -297,7 +296,7 @@ if menu == "📖 Dashboard Bulanan":
         st.markdown('</div>', unsafe_allow_html=True)
 
     with col_main:
-        # ===== KEJADIAN PENTING =====
+        # KEJADIAN PENTING
         if kejadian_text:
             st.markdown("#### 📜 Kejadian Penting Bulan Ini")
             st.markdown(f"""
@@ -306,7 +305,7 @@ if menu == "📖 Dashboard Bulanan":
             </div>
             """, unsafe_allow_html=True)
         
-        # ===== REFLEKSI =====
+        # REFLEKSI
         st.markdown("#### ✍️ Refleksi Bulan Ini")
         if evaluasi_text:
             st.markdown(f"""
@@ -321,7 +320,7 @@ if menu == "📖 Dashboard Bulanan":
             </div>
             """, unsafe_allow_html=True)
         
-        # ===== FOTO GALERI =====
+        # FOTO GALERI
         if foto_urls:
             st.markdown("#### 📸 Momen Bulan Ini")
             foto_html = '<div class="photo-gallery">'
@@ -329,10 +328,9 @@ if menu == "📖 Dashboard Bulanan":
                 foto_html += f'<img src="{url}" class="gallery-photo" alt="foto bulan">'
             foto_html += '</div>'
             st.markdown(foto_html, unsafe_allow_html=True)
-
     st.markdown('</div>', unsafe_allow_html=True)
 
-    # ===== ATURAN KEUANGAN =====
+    # ATURAN KEUANGAN
     st.markdown('<div class="glass-card">', unsafe_allow_html=True)
     st.markdown('<h3 style="color: #facc15; font-size: 1.1rem; margin:0 0 16px 0;">⚖️ PRINSIP KEUANGANKU</h3>', unsafe_allow_html=True)
     st.markdown("""
@@ -345,7 +343,7 @@ if menu == "📖 Dashboard Bulanan":
     """, unsafe_allow_html=True)
     st.markdown('</div>', unsafe_allow_html=True)
 
-    # ===== RINGKASAN PER KATEGORI =====
+    # RINGKASAN PER KATEGORI
     st.markdown('<h3 style="color: #eab308; font-size: 1.1rem; margin-top: 25px;">📊 PERTUMBUHAN & PENCAPAIAN</h3>', unsafe_allow_html=True)
     
     if not df_log.empty and "Bulan" in df_log.columns:
@@ -353,8 +351,8 @@ if menu == "📖 Dashboard Bulanan":
         df_prev = df_log[df_log["Bulan"] == prev_bulan] if prev_bulan is not None else pd.DataFrame()
         
         if not df_month.empty:
-            # ===== PENGETAHUAN =====
             col_p, col_a = st.columns(2)
+            # PENGETAHUAN
             with col_p:
                 html_peng = '<div class="summary-box"><div class="category-icon-title">' + f'<img src="{IMG_ICON_PENG}"><h4 style="color:#38bdf8; margin:0;">Pengetahuan</h4></div>'
                 df_peng = df_month[df_month["Kategori"] == "Pengetahuan"]
@@ -376,7 +374,7 @@ if menu == "📖 Dashboard Bulanan":
                 html_peng += "</div>"
                 st.markdown(html_peng, unsafe_allow_html=True)
 
-            # ===== AGAMA =====
+            # AGAMA
             with col_a:
                 html_agm = '<div class="summary-box"><div class="category-icon-title">' + f'<img src="{IMG_ICON_AGAMA}"><h4 style="color:#4ade80; margin:0;">Agama & Amalan</h4></div>'
                 df_agm = df_month[df_month["Kategori"] == "Agama"]
@@ -392,13 +390,13 @@ if menu == "📖 Dashboard Bulanan":
                             html_agm += f" <span style='color:#4ade80; font-size:0.8rem;'>(↑ {diff})</span>" if diff > 0 else f" <span style='color:#f43f5e; font-size:0.8rem;'>(↓ {abs(diff)})</span>" if diff < 0 else ""
                         html_agm += "</p>"
                         notes = [str(n).strip() for n in grp["Catatan"].tolist() if str(n).strip() != ""]
-                        if notes: html_agm += f'<div class="note-text">{", ".join(notes)}</div>'
+                        if notes: html_peng += f'<div class="note-text">{", ".join(notes)}</div>'
                 else:
                     html_agm += "<p style='color:#64748b; font-style:italic;'>Belum ada data bulan ini.</p>"
                 html_agm += "</div>"
                 st.markdown(html_agm, unsafe_allow_html=True)
 
-            # ===== KESEHATAN =====
+            # KESEHATAN
             html_kes = '<div class="summary-box"><div class="category-icon-title">' + f'<img src="{IMG_ICON_KES}"><h4 style="color:#f43f5e; margin:0;">Kesehatan</h4></div>'
             df_kes = df_month[df_month["Kategori"] == "Kesehatan"]
             df_kes_prev = df_prev[df_prev["Kategori"] == "Kesehatan"] if not df_prev.empty else pd.DataFrame()
@@ -419,7 +417,7 @@ if menu == "📖 Dashboard Bulanan":
             html_kes += "</div>"
             st.markdown(html_kes, unsafe_allow_html=True)
 
-            # ===== PERBAIKAN DIRI — KEBIASAAN BURUK =====
+            # PERBAIKAN DIRI
             html_per = '<div class="summary-box"><div class="category-icon-title">' + f'<span style="font-size:24px;">🛡️</span><h4 style="color:#f87171; margin:0;">Perbaikan Diri</h4></div>'
             df_per = df_month[df_month["Kategori"] == "Perbaikan Diri"]
             df_per_prev = df_prev[df_prev["Kategori"] == "Perbaikan Diri"] if not df_prev.empty else pd.DataFrame()
@@ -433,18 +431,16 @@ if menu == "📖 Dashboard Bulanan":
                     if prev_val > 0:
                         diff = tot_val - prev_val
                         if diff < 0:
-                            html_per += f' <span class="improve-better">(🎉 berkurang {abs(diff)})</span>'
+                            html_per += ' <span class="improve-better">(🎉 berkurang)</span>'
                         elif diff > 0:
-                            html_per += f' <span class="improve-worse">(⚠️ bertambah {diff})</span>'
-                        else:
-                            html_per += f' <span class="improve-same">(tetap)</span>'
+                            html_per += ' <span class="improve-worse">(⚠️ bertambah)</span>'
                     html_per += "</p>"
             else:
                 html_per += "<p style='color:#64748b; font-style:italic;'>Belum ada data bulan ini.</p>"
             html_per += "</div>"
             st.markdown(html_per, unsafe_allow_html=True)
 
-    # ===== DOMPET =====
+    # DOMPET
     st.markdown(f"""
     <div style="display:flex; align-items:center; gap:10px; margin-top:30px; margin-bottom:15px;">
         <img src="{IMG_ICON_KEU}" style="width:28px; height:28px;">
@@ -467,7 +463,7 @@ if menu == "📖 Dashboard Bulanan":
     with col_d3: st.markdown(f'<div class="metric-box"><div class="metric-label">📱 E-Wallet</div><div class="metric-value" style="color:#38bdf8;">{format_rp(s_ewallet)}</div><div style="font-size:0.7rem; color:#64748b;">Lalu: {format_rp(s_ewallet_prev)}</div>{change_html(s_ewallet, s_ewallet_prev)}</div>', unsafe_allow_html=True)
     with col_d4: st.markdown(f'<div class="metric-box"><div class="metric-label">📲 Ajaib</div><div class="metric-value" style="color:#38bdf8;">{format_rp(s_ajaib)}</div><div style="font-size:0.7rem; color:#64748b;">Lalu: {format_rp(s_ajaib_prev)}</div>{change_html(s_ajaib, s_ajaib_prev)}</div>', unsafe_allow_html=True)
 
-    # ===== ASET INVESTASI =====
+    # ASET INVESTASI
     st.markdown('<h3 style="color: #a855f7; font-size: 1.1rem; margin-top:25px; margin-bottom:15px;">📈 ASET INVESTASI</h3>', unsafe_allow_html=True)
     saham = get_monthly_balance(df_log, bulan_item, "Saham")
     reksadana = get_monthly_balance(df_log, bulan_item, "Reksadana")
@@ -484,7 +480,7 @@ if menu == "📖 Dashboard Bulanan":
     with col_i3: st.markdown(f'<div class="metric-box" style="border-color: rgba(168,85,247,0.2);"><div class="metric-label" style="color:#a855f7;">📊 Forex</div><div class="metric-value" style="color:#a855f7;">{format_rp(forex)}</div><div style="font-size:0.7rem; color:#64748b;">Lalu: {format_rp(forex_prev)}</div>{change_html(forex, forex_prev)}</div>', unsafe_allow_html=True)
     with col_i4: st.markdown(f'<div class="metric-box" style="border-color: rgba(168,85,247,0.2);"><div class="metric-label" style="color:#a855f7;">🪙 Kripto</div><div class="metric-value" style="color:#a855f7;">{format_rp(kripto)}</div><div style="font-size:0.7rem; color:#64748b;">Lalu: {format_rp(kripto_prev)}</div>{change_html(kripto, kripto_prev)}</div>', unsafe_allow_html=True)
 
-    # ===== HUTANG & PIUTANG DENGAN RINCIAN =====
+    # HUTANG & PIUTANG
     st.markdown('<h3 style="color: #f43f5e; font-size: 1.1rem; margin-top:25px; margin-bottom:15px;">📉 HUTANG & PIUTANG</h3>', unsafe_allow_html=True)
     
     hutang_sisa = get_monthly_balance(df_log, bulan_item, "Sisa Hutang")
@@ -503,15 +499,17 @@ if menu == "📖 Dashboard Bulanan":
         </div>
         """, unsafe_allow_html=True)
         
-        # Rincian Hutang
         df_hutang_rinci = df_month[df_month["Kategori"] == "Hutang"]
         if not df_hutang_rinci.empty:
             st.markdown('<div style="margin-top:10px; font-size:0.8rem; color:#94a3b8;"><b>📋 Rincian Hutang:</b></div>', unsafe_allow_html=True)
-            rincian_hutang = df_hutang_rinci[df_hutang_rinci["Metrik / Nama Kegiatan"] == "Rincian Hutang Ke"]["Catatan"].tolist()
-            nominal_hutang = df_hutang_rinci[df_hutang_rinci["Metrik / Nama Kegiatan"] == "Nominal Hutang"]["Nilai"].tolist()
-            for nama, nom in zip(rincian_hutang, nominal_hutang):
-                if str(nama).strip() and int(nom) > 0:
-                    st.markdown(f'<div class="detail-row"><span>• {nama}</span><span>{format_rp(int(nom))}</span></div>', unsafe_allow_html=True)
+            for _, row in df_hutang_rinci.iterrows():
+                nama = row.get("Catatan", "")
+                nom = row.get("Nilai", 0)
+                metrik = row.get("Metrik / Nama Kegiatan", "")
+                if metrik == "Rincian Hutang Ke" and str(nama).strip():
+                    st.markdown(f'<div class="detail-row"><span>• {nama}</span></div>', unsafe_allow_html=True)
+                if metrik == "Nominal Hutang" and int(nom) > 0:
+                    st.markdown(f'<div class="detail-row"><span>&nbsp;&nbsp;↳ {format_rp(int(nom))}</span></div>', unsafe_allow_html=True)
 
     with col_h2:
         st.markdown(f"""
@@ -523,17 +521,19 @@ if menu == "📖 Dashboard Bulanan":
         </div>
         """, unsafe_allow_html=True)
         
-        # Rincian Piutang
         df_piutang_rinci = df_month[df_month["Kategori"] == "Piutang"]
         if not df_piutang_rinci.empty:
             st.markdown('<div style="margin-top:10px; font-size:0.8rem; color:#94a3b8;"><b>📋 Rincian Piutang:</b></div>', unsafe_allow_html=True)
-            rincian_piutang = df_piutang_rinci[df_piutang_rinci["Metrik / Nama Kegiatan"] == "Rincian Piutang Dari"]["Catatan"].tolist()
-            nominal_piutang = df_piutang_rinci[df_piutang_rinci["Metrik / Nama Kegiatan"] == "Nominal Piutang"]["Nilai"].tolist()
-            for nama, nom in zip(rincian_piutang, nominal_piutang):
-                if str(nama).strip() and int(nom) > 0:
-                    st.markdown(f'<div class="detail-row"><span>• {nama}</span><span>{format_rp(int(nom))}</span></div>', unsafe_allow_html=True)
+            for _, row in df_piutang_rinci.iterrows():
+                nama = row.get("Catatan", "")
+                nom = row.get("Nilai", 0)
+                metrik = row.get("Metrik / Nama Kegiatan", "")
+                if metrik == "Rincian Piutang Dari" and str(nama).strip():
+                    st.markdown(f'<div class="detail-row"><span>• {nama}</span></div>', unsafe_allow_html=True)
+                if metrik == "Nominal Piutang" and int(nom) > 0:
+                    st.markdown(f'<div class="detail-row"><span>&nbsp;&nbsp;↳ {format_rp(int(nom))}</span></div>', unsafe_allow_html=True)
 
-    # ===== TOTAL KEKAYAAN =====
+    # TOTAL KEKAYAAN
     total_dompet = s_cash + s_bank + s_ewallet + s_ajaib
     total_inv = saham + reksadana + forex + kripto
     total = total_dompet + total_inv - hutang_sisa + piutang_sisa
@@ -555,7 +555,7 @@ if menu == "📖 Dashboard Bulanan":
     st.markdown('<hr style="border:0; height:1px; background: rgba(234,179,8,0.2); margin:24px 0;">', unsafe_allow_html=True)
 
 # ---------------------------------------------------------
-# 2. INPUT PROGRESS MINGGUAN — TOMBOL PER BARIS
+# 2. INPUT PROGRESS MINGGUAN
 # ---------------------------------------------------------
 elif menu == "📝 Input Progress Mingguan":
     st.markdown('<h2 class="gradient-header">📝 CATAT PROGRESS MINGGUAN</h2>', unsafe_allow_html=True)
@@ -563,7 +563,6 @@ elif menu == "📝 Input Progress Mingguan":
 
     df_custom = load_data(ws_custom)
     
-    # Pastikan nama kolom benar
     if not df_custom.empty and list(df_custom.columns) != ["Kategori", "Nama Metrik", "Satuan"]:
         df_custom.columns = ["Kategori", "Nama Metrik", "Satuan"]
     
@@ -578,7 +577,6 @@ elif menu == "📝 Input Progress Mingguan":
 
     st.markdown("#### Langkah 1: Pilih Kategori")
     
-    # ✅ TOMBOL PER BARIS — TIDAK ERROR DI HP
     for kat in kategori_list:
         if st.button(f"📂 {kat}", use_container_width=True):
             st.session_state.selected_category = kat
@@ -602,7 +600,6 @@ elif menu == "📝 Input Progress Mingguan":
                     step = 50000 if str(satuan).strip() == "Rp" else 1
                     nilai = st.number_input(f"{metrik_nama} ({satuan})", min_value=0, step=step, key=f"inp_{metrik_nama}")
                 with c_note:
-                    # Khusus untuk rincian hutang/piutang — catatan = nama orang
                     if "Rincian" in str(metrik_nama):
                         catatan = st.text_input(f"Nama", key=f"note_{metrik_nama}", placeholder="Contoh: Bapak A, Toko B...")
                     else:
@@ -628,4 +625,34 @@ elif menu == "📝 Input Progress Mingguan":
 # ---------------------------------------------------------
 elif menu == "💸 Catat Pengeluaran":
     st.markdown('<h2 class="gradient-header">💸 CATAT PENGELOUARAN HARIAN</h2>', unsafe_allow_html=True)
-    st.write("Pilih dari dompet mana uangnya dipakai,
+    st.write("Pilih dari dompet mana uangnya dipakai, otomatis tercatat.")
+    with st.form("form_transaksi", clear_on_submit=True):
+        c1, c2 = st.columns(2)
+        with c1: bulan_t = st.selectbox("📅 Bulan", ["Januari", "Februari", "Maret", "April", "Mei", "Juni", 
+            "Juli", "Agustus", "September", "Oktober", "November", "Desember"], index=8)
+        with c2: minggu_t = st.selectbox("📆 Minggu", ["Minggu 1", "Minggu 2", "Minggu 3", "Minggu 4"])
+        sumber_dana = st.selectbox("💰 Ambil Dari:", ["Cash", "Bank", "E-Wallet (DANA + GoPay)", "Ajaib"])
+        nominal = st.number_input("💵 Nominal Pengeluaran (Rp):", min_value=0, step=10000, value=0)
+        keperluan = st.text_input("📝 Keterangan Keperluan:", placeholder="Contoh: Beli buku, bayar listrik, makan...")
+        btn_transaksi = st.form_submit_button("💸 SIMPAN PENGELOUARAN", type="primary", use_container_width=True)
+    if btn_transaksi:
+        if nominal > 0:
+            with st.spinner("Menyimpan transaksi..."):
+                metrik_name = f"Pengeluaran dari {sumber_dana}"
+                ws_log.append_row([bulan_t, minggu_t, "Dompet", metrik_name, int(nominal), "Rp", keperluan or "-"])
+                st.success(f"✅ Berhasil dicatat! Rp {nominal:,.0f} dipotong dari **{sumber_dana}** bulan {bulan_t}.")
+                st.info("ℹ️ Hanya dicatat — saldo dihitung otomatis di Dashboard.")
+        else:
+            st.warning("⚠️ Masukkan nominal yang lebih dari 0.")
+
+# ---------------------------------------------------------
+# 4. FOTO, KEJADIAN & REFLEKSI BULANAN
+# ---------------------------------------------------------
+elif menu == "🎯 Foto, Kejadian & Refleksi":
+    st.markdown('<h2 class="gradient-header">🎯 FOTO, KEJADIAN & REFLEKSI BULANAN</h2>', unsafe_allow_html=True)
+    st.write("Simpan momen terbaik, kejadian penting, dan tuliskan pelajaran berharga bulan ini.")
+    with st.form("form_bulanan", clear_on_submit=True):
+        bulan_eval = st.selectbox("📅 Pilih Bulan", ["Januari", "Februari", "Maret", "April", "Mei", "Juni", 
+            "Juli", "Agustus", "September", "Oktober", "November", "Desember"], index=8)
+        foto_url_input = st.text_area("📸 Link Foto Bulan Ini (pisahkan dengan koma):", 
+            placeholder="Contoh: https://i.ibb.co/xxx/foto1.jpg, https://i.ibb
